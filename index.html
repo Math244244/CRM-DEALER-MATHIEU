@@ -2,12 +2,17 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>CRM</title>
+  <title>CRM sécurisé</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Tailwind CSS pour styles rapides -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- XLSX pour l’import/export Excel/CSV -->
+  <!-- Flatpickr CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+  />
+  <!-- XLSX pour l’import/export Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <!-- Font Awesome pour quelques icônes -->
   <link
@@ -27,7 +32,6 @@
       font-family: 'Inter', Arial, sans-serif;
       color: #222c38;
     }
-
     /* Image de la voiture (derrière) */
     .bg-car-visible {
       position: fixed;
@@ -50,8 +54,7 @@
       background: rgba(220, 38, 38, 0.15);
       pointer-events: none;
     }
-
-    /* === CARTES CRM (volets) === */
+    /* === CRM-CARD, ONGLETS, TABLES, ETC. === */
     .crm-card {
       background: rgba(255, 255, 255, 0.98);
       border-radius: 1.7rem;
@@ -60,8 +63,6 @@
       z-index: 10;
       padding: 1rem;
     }
-
-    /* === ONGLETS DE NAVIGATION === */
     .nav-tab {
       color: #dc2626;
       font-weight: 700;
@@ -85,8 +86,6 @@
       color: #fff !important;
       box-shadow: 0 2px 10px #dc262670;
     }
-
-    /* === LOGO / TITRE “CRM” === */
     .crm-logo-text {
       font-family: 'Oswald', 'Montserrat', Arial, sans-serif;
       letter-spacing: 1.5px;
@@ -109,8 +108,6 @@
         padding-right: 1rem;
       }
     }
-
-    /* === TABLEAUX À DÉFILEMENT HORIZONTAL === */
     .crm-table-scroll {
       overflow-x: auto;
       width: 100%;
@@ -142,8 +139,6 @@
     td {
       font-size: 0.94rem;
     }
-
-    /* === PASTILLES COLORÉES === */
     .chip {
       display: inline-block;
       padding: 4px 10px;
@@ -158,7 +153,7 @@
     .chip-gray   { background: #F3F4F6 !important; color: #374151 !important; }
     .chip-blue   { background: #A3D8F4 !important; color: #0C4A6E !important; }
 
-    /* Désactive les flèches par défaut des <input type="number"> */
+    /* Désactive flèches par défaut des <input type="number"> */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
       -webkit-appearance: none;
@@ -171,9 +166,12 @@
     input[type="number"]:-ms-input-placeholder { color: #999; }
     input[type="number"]::placeholder { color: #999; }
 
-    /* === STYLES SPÉCIFIQUES AU RESTE DU CRM (Notes, Visites, Calculatrice, etc.) === */
+    /* Flatpickr calendar au-dessus */
+    .flatpickr-calendar {
+      z-index: 9999 !important;
+    }
 
-    /* NOTES / INFOS POPUP */
+    /* === POPUPS NOTES & INFOS === */
     .notes-overlay {
       position: fixed;
       inset: 0;
@@ -269,7 +267,7 @@
       font-size: 0.9rem;
     }
 
-    /* CALCULATRICE FINANCIÈRE */
+    /* === CALCULATRICE FINANCIÈRE === */
     .calc-header {
       font-size: 2rem;
       color: #fff;
@@ -849,10 +847,6 @@
         width: 26vw;
         min-width: 36vw;
       }
-      .note-field {
-        font-size: 0.94rem;
-        min-height: 36px;
-      }
     }
 
     /* === CSS D’IMPRESSION (A4/Letter) === */
@@ -895,14 +889,104 @@
         display: none !important;
       }
     }
+
+    /* === LOGIN OVERLAY === */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #login-box {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    #login-box h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #dc2626;
+      font-weight: 700;
+    }
+    #login-box input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    #login-box label {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    #login-box button {
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    #login-box button:hover {
+      background: #b91c1c;
+    }
+    #logout-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #fff;
+      color: #dc2626;
+      border: 2px solid #dc2626;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      z-index: 500;
+    }
+    #logout-btn:hover {
+      background: #dc2626;
+      color: #fff;
+    }
   </style>
 </head>
 
 <body class="min-h-screen flex flex-col items-center relative overflow-x-hidden">
+  <!-- Overlay pour login -->
+  <div id="login-overlay">
+    <div id="login-box">
+      <h2>Se connecter au CRM</h2>
+      <input type="password" id="login-password" placeholder="Mot de passe" />
+      <label>
+        <input type="checkbox" id="login-remember" /> Se souvenir de moi
+      </label>
+      <button id="login-submit">Valider</button>
+    </div>
+  </div>
 
   <!-- Fond d’écran + calque rouge -->
   <div class="bg-car-visible"></div>
   <div class="bg-red-overlay"></div>
+
+  <!-- Bouton Déconnexion -->
+  <button id="logout-btn">Déconnexion</button>
 
   <!-- En-tête / Logo -->
   <header class="w-full flex flex-col items-center py-7" style="z-index: 21;">
@@ -924,12 +1008,10 @@
       <button class="nav-tab" id="tab-calc-btn">Calculatrice financière</button>
       <button class="nav-tab" id="tab-garantie-btn">Outil Visuel Garantie</button>
       <button class="nav-tab" id="tab-livraison-btn">Feuille de livraison</button>
-      <button class="nav-tab" id="logout-btn">Se déconnecter</button>
     </div>
   </nav>
 
   <main class="w-full flex-1 flex flex-col gap-4 px-1 md:px-8 mb-10 relative z-10">
-
     <!-- ==================== Onglet Accueil ==================== -->
     <section id="tab-accueil" class="crm-card mt-2 shadow-2xl">
       <div class="flex flex-col items-center py-8">
@@ -950,8 +1032,8 @@
           <span
             class="text-2xl italic text-gray-600 border-l-4 border-red-400 pl-4"
           >
-            “On ne sauve pas des vies, on vend des Garanties.”
-          </span>
+            “On ne sauve pas des vies, on vend des Garanties.”</span
+          >
         </div>
         <div class="text-gray-500 text-sm mt-6">
           &copy; <span id="footer-year">2025</span> – Avantage Plus
@@ -1620,12 +1702,12 @@
         </div>
         <!-- FNI -->
         <div class="flex flex-col gap-2">
-          <label for="info-fni" class="font-semibold">Directeur Financier :</label>
+          <label for="info-fni" class="font-semibold">FNI :</label>
           <input
             type="text"
             id="info-fni"
             class="border border-gray-300 rounded p-1 text-sm w-full"
-            placeholder="Nom du Directeur Financier"
+            placeholder="Numéro FNI"
           />
         </div>
         <!-- Dir. Service : Nom + E-mail -->
@@ -1646,23 +1728,56 @@
             title="Cliquez pour envoyer un e-mail"
           />
         </div>
-        <!-- Supplémentaires : Jusqu’à 3 Directeurs Financiers -->
+        <!-- Directeurs financiers (jusqu'à 3) -->
         <div class="flex flex-col gap-2">
-          <label for="info-fni-2" class="font-semibold">Directeur Financier (2) :</label>
+          <label class="font-semibold">Directeur financier #1 :</label>
           <input
             type="text"
-            id="info-fni-2"
+            id="info-df1"
             class="border border-gray-300 rounded p-1 text-sm w-full"
-            placeholder="Nom du Deuxième Directeur Financier"
+            placeholder="Nom du DF#1"
+          />
+          <input
+            type="email"
+            id="info-df1-email"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Email DF#1"
+            onclick="navigateToGmail('info-df1-email')"
+            title="Cliquez pour envoyer un e-mail"
           />
         </div>
         <div class="flex flex-col gap-2">
-          <label for="info-fni-3" class="font-semibold">Directeur Financier (3) :</label>
+          <label class="font-semibold">Directeur financier #2 :</label>
           <input
             type="text"
-            id="info-fni-3"
+            id="info-df2"
             class="border border-gray-300 rounded p-1 text-sm w-full"
-            placeholder="Nom du Troisième Directeur Financier"
+            placeholder="Nom du DF#2"
+          />
+          <input
+            type="email"
+            id="info-df2-email"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Email DF#2"
+            onclick="navigateToGmail('info-df2-email')"
+            title="Cliquez pour envoyer un e-mail"
+          />
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="font-semibold">Directeur financier #3 :</label>
+          <input
+            type="text"
+            id="info-df3"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Nom du DF#3"
+          />
+          <input
+            type="email"
+            id="info-df3-email"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Email DF#3"
+            onclick="navigateToGmail('info-df3-email')"
+            title="Cliquez pour envoyer un e-mail"
           />
         </div>
       </div>
@@ -1675,123 +1790,110 @@
     </div>
   </div>
 
-  <!-- ================= Scripts JavaScript ================= -->
+  <!-- Flatpickr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
   <script>
-    // === NAVIGATION DES ONGLETS ===
-    const tabs = [
-      { btn: 'tab-accueil-btn', tab: 'tab-accueil' },
-      { btn: 'tab-performance-btn', tab: 'tab-performance' },
-      { btn: 'tab-visite-btn', tab: 'tab-visite' },
-      { btn: 'tab-calc-btn', tab: 'tab-calc' },
-      { btn: 'tab-garantie-btn', tab: 'tab-garantie' },
-      { btn: 'tab-livraison-btn', tab: 'tab-livraison' }
-    ];
+    /***********************************************************/
+    /***               Variables globales                  ***/
+    /***********************************************************/
+    const PASSWORD = "admin12345";
+    const BACKUP_URL = "https://script.google.com/macros/s/AKfycbw2Qcf_fO3d1LKkYb6adradD2v2G8iyFMSDdn7z5E4IRDiDIVcXUefiKXbJx8GufU7x/exec";
+    let BACKUP_INTERVAL_MS = 1000 * 60 * 60 * 24; // 24h
 
-    function switchTab(index) {
-      tabs.forEach((item, i) => {
-        document.getElementById(item.tab).classList.toggle('hidden', i !== index);
-        document.getElementById(item.btn).classList.toggle('nav-active', i === index);
-      });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      // Au besoin, déclencher des fonctions de rendu lors du changement de tab
-      if (index === 1) renderPerformance();
-      if (index === 2) renderVisite();
-      if (index === 4) drawGraph();
+    /***********************************************************/
+    /***                 Gestion du login                    ***/
+    /***********************************************************/
+    function showLogin() {
+      document.getElementById("login-overlay").style.display = "flex";
+    }
+    function hideLogin() {
+      document.getElementById("login-overlay").style.display = "none";
+    }
+    function logout() {
+      localStorage.removeItem("crm_logged_in");
+      hideContent();
+      showLogin();
+    }
+    function hideContent() {
+      document.querySelector("header").style.display = "none";
+      document.querySelector("nav").style.display = "none";
+      document.querySelector("main").style.display = "none";
+      document.getElementById("logout-btn").style.display = "none";
+    }
+    function showContent() {
+      document.querySelector("header").style.display = "flex";
+      document.querySelector("nav").style.display = "flex";
+      document.querySelector("main").style.display = "flex";
+      document.getElementById("logout-btn").style.display = "block";
     }
 
-    // Attacher les événements de clic après que le DOM est chargé
-    window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById("login-submit").addEventListener("click", () => {
+      const pwd = document.getElementById("login-password").value;
+      const remember = document.getElementById("login-remember").checked;
+      if (pwd === PASSWORD) {
+        if (remember) {
+          localStorage.setItem("crm_logged_in", "true");
+        }
+        hideLogin();
+        showContent();
+      } else {
+        alert("Mot de passe incorrect.");
+      }
+      document.getElementById("login-password").value = "";
+    });
+    document.getElementById("logout-btn").addEventListener("click", logout);
+
+    /***********************************************************/
+    /***             Démarrage après DOM loaded               ***/
+    /***********************************************************/
+    window.addEventListener("DOMContentLoaded", () => {
+      // Vérifier si déjà connecté
+      if (localStorage.getItem("crm_logged_in") === "true") {
+        hideLogin();
+        showContent();
+      } else {
+        hideContent();
+        showLogin();
+      }
+
+      // Attacher navigation d'onglets
       tabs.forEach((item, idx) => {
         const btnEl = document.getElementById(item.btn);
         if (btnEl) {
-          btnEl.addEventListener('click', () => switchTab(idx));
+          btnEl.addEventListener("click", () => switchTab(idx));
         }
       });
-
-      // Bouton de déconnexion : recharge la page et supprime “remember me”
-      document.getElementById('logout-btn')?.addEventListener('click', () => {
-        localStorage.removeItem('remember_me');
-        sessionStorage.removeItem('authenticated');
-        location.reload();
-      });
-
-      // Ouvrir sur l’onglet “Accueil” par défaut
+      // Onglet par défaut
       switchTab(0);
 
-      // Initialiser année du footer
-      const y = new Date().getFullYear();
-      document.getElementById('footer-year').textContent = y;
+      // Initialiser footer année
+      document.getElementById("footer-year").textContent = new Date().getFullYear();
 
-      // Initialiser les composants des onglets (performance, visite, calcul, garantie)
+      // Rendu initial des onglets
       renderPerformance();
       renderVisite();
       initializeCalculatrice();
       initializeGraphGarantie();
 
-      // Si “remember me” est présent dans localStorage, on authentifie directement
-      const remember = localStorage.getItem('remember_me');
-      if (remember === 'true') {
-        sessionStorage.setItem('authenticated', 'true');
-      }
-
-      // Si non-authentifié, rediriger vers une simple modale de login
-      if (sessionStorage.getItem('authenticated') !== 'true') {
-        showLoginModal();
-      }
+      // Programmer le backup automatique
+      schedulePeriodicBackup();
     });
 
-    // === LOGIN SIMPLE (mot de passe = admin12345) ===
-    function showLoginModal() {
-      // Crée une overlay modale
-      const overlay = document.createElement('div');
-      overlay.id = 'login-overlay';
-      overlay.style.position = 'fixed';
-      overlay.style.inset = '0';
-      overlay.style.background = 'rgba(0,0,0,0.7)';
-      overlay.style.display = 'flex';
-      overlay.style.alignItems = 'center';
-      overlay.style.justifyContent = 'center';
-      overlay.style.zIndex = '100';
-
-      overlay.innerHTML = `
-        <div style="background:white; padding:2rem; border-radius:0.5rem; max-width:320px; width:90%; text-align:center; box-shadow:0 4px 16px rgba(0,0,0,0.2);">
-          <h2 style="font-size:1.5rem; margin-bottom:1rem; color:#dc2626;">Connexion CRM</h2>
-          <input type="password" id="login-password" placeholder="Mot de passe" style="width:100%; padding:0.5rem; margin-bottom:1rem; border:1px solid #ccc; border-radius:0.25rem;" />
-          <div style="display:flex; align-items:center; justify-content:flex-start; margin-bottom:1rem;">
-            <input type="checkbox" id="remember-me" style="margin-right:0.5rem;" />
-            <label for="remember-me" style="font-size:0.9rem;">Se souvenir de moi</label>
-          </div>
-          <button id="login-submit" style="background:#dc2626; color:#fff; padding:0.5rem 1rem; border:none; border-radius:0.25rem; cursor:pointer; font-weight:bold;">Se connecter</button>
-          <div id="login-error" style="color:red; margin-top:1rem; font-size:0.9rem; display:none;">Mot de passe incorrect</div>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-
-      document.getElementById('login-submit').addEventListener('click', () => {
-        const pwd = document.getElementById('login-password').value;
-        const rem = document.getElementById('remember-me').checked;
-        if (pwd === 'admin12345') {
-          sessionStorage.setItem('authenticated', 'true');
-          if (rem) localStorage.setItem('remember_me', 'true');
-          document.getElementById('login-overlay').remove();
-        } else {
-          document.getElementById('login-error').style.display = 'block';
-        }
-      });
-    }
-
-    // === GESTION MULTI-ANNÉES & LOCALSTORAGE ===
+    /***********************************************************/
+    /***           Fonctions de stockage local               ***/
+    /***********************************************************/
     function getCurrentYear() {
       return new Date().getFullYear().toString();
     }
     function loadAllData() {
-      const raw = localStorage.getItem('crm_data');
+      const raw = localStorage.getItem("crm_data");
       return raw ? JSON.parse(raw) : {};
     }
     function saveAllData(obj) {
-      localStorage.setItem('crm_data', JSON.stringify(obj));
+      localStorage.setItem("crm_data", JSON.stringify(obj));
+      // Dès qu'on met à jour crm_data, on envoie un backup
+      backupToGoogleDrive();
     }
     function loadDealers() {
       const all = loadAllData();
@@ -1811,61 +1913,141 @@
     function createDealer() {
       return {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2),
-        name: '',
-        taux: '',
-        mois: Array(12).fill(''),
-        moyennePrevYear: '',
+        name: "",
+        taux: "",
+        mois: Array(12).fill(""),
+        moyennePrevYear: "",
         visits: [],
         notes: [],
-        priority: '1',
+        priority: "1",
         info: {
-          proprietaire: '',
-          email_proprietaire: '',
-          comptabilite: '',
-          email_comptabilite: '',
-          fni: '',
-          dir_service: '',
-          email_dir_service: ''
+          proprietaire: "",
+          email_proprietaire: "",
+          comptabilite: "",
+          email_comptabilite: "",
+          fni: "",
+          dir_service: "",
+          email_dir_service: "",
+          directeurs_financiers: []
         }
       };
     }
 
-    // === UTILS CALCULS PERFORMANCE ===
+    /***********************************************************/
+    /***      Sauvegarde automatique vers Google Drive       ***/
+    /***********************************************************/
+    function backupToGoogleDrive() {
+      const data = localStorage.getItem("crm_data") || "{}";
+      fetch(BACKUP_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ data: data })
+      })
+        .then(response => response.json())
+        .then(json => {
+          if (json.status && json.status === "ok") {
+            console.log("📦 Backup envoyé sur Google Drive avec succès");
+          } else {
+            console.warn("⚠️ Backup partiellement envoyé, statut:", json);
+          }
+        })
+        .catch(err => {
+          console.error("❌ Erreur lors de l'envoi du backup :", err);
+        });
+    }
+    function schedulePeriodicBackup() {
+      setInterval(() => {
+        console.log("⏰ Envoi de backup quotidien");
+        backupToGoogleDrive();
+      }, BACKUP_INTERVAL_MS);
+    }
+
+    /***********************************************************/
+    /***              Fonctions utilitaires                   ***/
+    /***********************************************************/
     function totalAnnual(arr) {
       return (arr || []).reduce((sum, v) => {
-        if (v === '' || v === '-') return sum;
-        const n = parseFloat(v.toString().replace(/\s/g, ''));
+        if (v === "" || v === "-") return sum;
+        const n = parseFloat(v.toString().replace(/\s/g, ""));
         return sum + (isNaN(n) ? 0 : n);
       }, 0);
     }
     function averageMonthly(arr) {
       const filtered = (arr || []).filter(v => {
         if (!v) return false;
-        if (v === '') return false;
-        if (v === '-') return false;
-        const n = parseFloat(v.toString().replace(/\s/g, ''));
+        if (v === "") return false;
+        if (v === "-") return false;
+        const n = parseFloat(v.toString().replace(/\s/g, ""));
         return !isNaN(n);
       });
       if (!filtered.length) return 0;
       const sum = filtered.reduce((acc, v) => {
-        const n = parseFloat(v.toString().replace(/\s/g, ''));
+        const n = parseFloat(v.toString().replace(/\s/g, ""));
         return acc + (isNaN(n) ? 0 : n);
       }, 0);
       return sum / filtered.length;
     }
+    function getClaimColor(val) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return "chip-gray";
+      if (num < 30) return "chip-green";
+      if (num <= 40) return "chip-yellow";
+      return "chip-red";
+    }
+    function daysSince(dateStr) {
+      if (!dateStr) return "-";
+      const d = new Date(dateStr);
+      if (isNaN(d)) return "-";
+      const now = new Date();
+      const diff = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+      return diff >= 0 ? diff : "-";
+    }
+    function getDaysColorClass(days) {
+      const n = parseInt(days);
+      if (isNaN(n) || days === "-") return "";
+      if (n <= 30) return "bg-green-100 text-green-800 border-green-200";
+      if (n <= 60) return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      return "bg-red-100 text-red-800 border-red-200";
+    }
 
-    // === RENDEZ-VOUS PERFORMANCE MENSUELLE ===
+    /***********************************************************/
+    /***                Navigation d’onglets                  ***/
+    /***********************************************************/
+    const tabs = [
+      { btn: "tab-accueil-btn", tab: "tab-accueil" },
+      { btn: "tab-performance-btn", tab: "tab-performance" },
+      { btn: "tab-visite-btn", tab: "tab-visite" },
+      { btn: "tab-calc-btn", tab: "tab-calc" },
+      { btn: "tab-garantie-btn", tab: "tab-garantie" },
+      { btn: "tab-livraison-btn", tab: "tab-livraison" }
+    ];
+    function switchTab(index) {
+      tabs.forEach((item, i) => {
+        document.getElementById(item.tab).classList.toggle("hidden", i !== index);
+        document.getElementById(item.btn).classList.toggle("nav-active", i === index);
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (index === 1) renderPerformance();
+      if (index === 2) renderVisite();
+      if (index === 4) drawGraph();
+    }
+
+    /***********************************************************/
+    /***           Onglet “Suivi performance mensuelle”       ***/
+    /***********************************************************/
     function renderPerformance() {
       const currentYear = parseInt(getCurrentYear());
       const prevYear = currentYear - 1;
-
-      let search = document.getElementById('search-performance').value.trim().toLowerCase();
+      let search = document.getElementById("search-performance").value.trim().toLowerCase();
       let dealers = loadDealers().slice().sort((a, b) =>
-        (a.name || '').localeCompare(b.name || '')
+        (a.name || "").localeCompare(b.name || "")
       );
       if (search) {
         dealers = dealers.filter(d =>
-          (d.name || '').toLowerCase().includes(search)
+          (d.name || "").toLowerCase().includes(search)
         );
       }
 
@@ -1892,7 +2074,7 @@
               <th style="min-width:84px">Total ${currentYear}</th>
               <th style="min-width:84px">Moyenne ${currentYear}</th>
               <th style="min-width:100px">Moyenne ${prevYear}</th>
-              <th style="min-width:102px">% Diff ${prevYear}–${currentYear}</th>
+              <th style="min-width:80px">% Diff ${prevYear}–${currentYear}</th>
               <th style="min-width:60px">Notes</th>
               <th style="min-width:48px"></th>
             </tr>
@@ -1908,7 +2090,7 @@
         const moyCurYearNum = Math.round(averageMonthly(moisArr));
         const moyPrevYearNum = parseFloat(d.moyennePrevYear) || 0;
         const moyPrevYear = Math.round(moyPrevYearNum);
-        let diffPct = '0.0';
+        let diffPct = "0.0";
         if (moyPrevYearNum !== 0) {
           diffPct = (
             (moyCurYearNum - moyPrevYearNum) /
@@ -1916,11 +2098,10 @@
             100
           ).toFixed(1);
         }
-        const pctColor = parseFloat(diffPct) >= 0 ? 'chip-green' : 'chip-red';
-
-        const totFmt = totCurYear.toLocaleString('fr-FR');
-        const moyCurFmt = moyCurYearNum.toLocaleString('fr-FR');
-        const moyPrevFmt = moyPrevYear.toLocaleString('fr-FR');
+        const pctColor = parseFloat(diffPct) >= 0 ? "chip-green" : "chip-red";
+        const totFmt = totCurYear.toLocaleString("fr-FR");
+        const moyCurFmt = moyCurYearNum.toLocaleString("fr-FR");
+        const moyPrevFmt = moyPrevYear.toLocaleString("fr-FR");
 
         html += `
           <tr data-id="${d.id}" class="hover:bg-gray-50 transition-all">
@@ -1935,7 +2116,7 @@
             <td>
               <input
                 type="text"
-                value="${d.name || ''}"
+                value="${d.name || ""}"
                 class="border-b border-gray-300 focus:border-red-500 px-1 w-full bg-white text-center"
                 onchange="updateNameById('${d.id}', this.value)"
                 tabindex="1"
@@ -1945,21 +2126,21 @@
               <div style="display:inline-flex;align-items:center;gap:0.2em;">
                 <input
                   type="number"
-                  value="${d.taux || ''}"
+                  value="${d.taux || ""}"
                   class="chip ${getClaimColor(d.taux)}"
-                  style="font-size:0.9rem; padding:4px 6px; width:50px; background-clip: padding-box;"
+                  style="font-size:0.9rem; padding:2px 4px; width:42px; min-width:42px; text-align:center;"
                   onchange="updateTauxById('${d.id}', this.value)"
                   tabindex="0"
                 />
-                <span class="font-bold text-gray-400">%</span>
+                <span class="font-bold text-gray-400" style="font-size:0.85rem;">%</span>
               </div>
             </td>
         `;
 
         // Colonnes mois (12 colonnes)
         for (let m = 0; m < 12; m++) {
-          let rawVal = moisArr[m] != null ? moisArr[m] : '';
-          let displayed = rawVal === 0 ? '0' : rawVal.toString();
+          let rawVal = moisArr[m] != null ? moisArr[m] : "";
+          let displayed = rawVal === 0 ? "0" : rawVal.toString();
           html += `
             <td>
               <div style="display:inline-flex;align-items:center;gap:0.2em;">
@@ -1977,7 +2158,7 @@
           `;
         }
 
-        // Total de l’année en cours (pastille bleue)
+        // Total de l’année en cours
         html += `
           <td>
             <span class="chip chip-blue">${totFmt}
@@ -1985,7 +2166,7 @@
             </span>
           </td>
         `;
-        // Moyenne de l’année en cours (pastille jaune)
+        // Moyenne de l’année en cours
         html += `
           <td>
             <span class="chip chip-yellow">${moyCurFmt}
@@ -1999,7 +2180,7 @@
             <div style="display:inline-flex;align-items:center;gap:0.2em;">
               <input
                 type="number"
-                value="${moyPrevYear || ''}"
+                value="${moyPrevYear || ""}"
                 class="border-b border-gray-300 focus:border-red-500 px-1 bg-white w-16 text-right"
                 onchange="updatePrevYearAverage('${d.id}', this.value)"
                 tabindex="${2 + 12 + (idx - 1) * 14}"
@@ -2012,7 +2193,7 @@
         html += `
           <td>
             <span class="chip ${pctColor}">
-              ${parseFloat(diffPct) >= 0 ? '+' : ''}${diffPct}%
+              ${parseFloat(diffPct) >= 0 ? "+" : ""}${diffPct}%
             </span>
           </td>
         `;
@@ -2046,8 +2227,8 @@
 
       dealers.forEach(d => {
         (d.mois || []).forEach((v, i) => {
-          if (v !== '' && v !== '-') {
-            const n = parseFloat(v.toString().replace(/\s/g, ''));
+          if (v !== "" && v !== "-") {
+            const n = parseFloat(v.toString().replace(/\s/g, ""));
             if (!isNaN(n)) totalsArray[i] += n;
           }
         });
@@ -2066,7 +2247,7 @@
       const totalYearSum = totalsArray.reduce((a, b) => a + b, 0);
       const avgCurYear = countMoyCur ? Math.round(sumMoyCur / countMoyCur) : 0;
       const avgPrevYear = countMoyPrev ? Math.round(sumMoyPrev / countMoyPrev) : 0;
-      let diffPctGlobal = '0.0';
+      let diffPctGlobal = "0.0";
       if (avgPrevYear !== 0) {
         diffPctGlobal = (
           (avgCurYear - avgPrevYear) /
@@ -2075,15 +2256,15 @@
         ).toFixed(1);
       }
       const pctColorGlobal =
-        parseFloat(diffPctGlobal) >= 0 ? 'chip-green' : 'chip-red';
+        parseFloat(diffPctGlobal) >= 0 ? "chip-green" : "chip-red";
 
-      const totalYearFmt = totalYearSum.toLocaleString('fr-FR');
-      const avgCurFmt = avgCurYear.toLocaleString('fr-FR');
-      const avgPrevFmt = avgPrevYear.toLocaleString('fr-FR');
+      const totalYearFmt = totalYearSum.toLocaleString("fr-FR");
+      const avgCurFmt = avgCurYear.toLocaleString("fr-FR");
+      const avgPrevFmt = avgPrevYear.toLocaleString("fr-FR");
 
       const colTotalsHTML = totalsArray
         .map(val => {
-          const f = val.toLocaleString('fr-FR');
+          const f = val.toLocaleString("fr-FR");
           return `
           <td class="px-1 py-1 bg-gray-50">
             <span class="chip chip-yellow">
@@ -2091,7 +2272,7 @@
             </span>
           </td>`;
         })
-        .join('');
+        .join("");
 
       const totalRow = `
         <tr class="bg-gray-50 font-semibold">
@@ -2115,17 +2296,16 @@
           </td>
           <td>
             <span class="chip ${pctColorGlobal}">
-              ${parseFloat(diffPctGlobal) >= 0 ? '+' : ''}${diffPctGlobal}%
+              ${parseFloat(diffPctGlobal) >= 0 ? "+" : ""}${diffPctGlobal}%
             </span>
           </td>
           <td colspan="2"></td>
         </tr>
       `;
-      html += totalRow + '</tbody></table>';
-      document.getElementById('performance-table-container').innerHTML = html;
+      html += totalRow + "</tbody></table>";
+      document.getElementById("performance-table-container").innerHTML = html;
     }
 
-    // === MISES À JOUR DES VALEURS (Onglet Performance) ===
     function updateNameById(id, val) {
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
@@ -2137,7 +2317,7 @@
     function updateTauxById(id, val) {
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
-      if (d) d.taux = val !== '' ? +val : '';
+      if (d) d.taux = val !== "" ? +val : "";
       saveDealers(arr);
       renderPerformance();
       renderVisite();
@@ -2147,15 +2327,15 @@
       const d = arr.find(e => e.id === id);
       if (!d) return;
       const v = rawValue.trim();
-      if (v === '-') {
-        d.mois[monthIndex] = '-';
+      if (v === "-") {
+        d.mois[monthIndex] = "-";
       } else {
-        const cleaned = v.replace(/\s/g, '');
+        const cleaned = v.replace(/\s/g, "");
         const num = parseFloat(cleaned);
         if (!isNaN(num) && num >= 0) {
           d.mois[monthIndex] = Math.round(num).toString();
         } else {
-          d.mois[monthIndex] = '';
+          d.mois[monthIndex] = "";
         }
       }
       saveDealers(arr);
@@ -2167,195 +2347,87 @@
       const d = arr.find(e => e.id === id);
       if (d) {
         const num = parseFloat(val);
-        d.moyennePrevYear = isNaN(num) ? '' : Math.round(num);
+        d.moyennePrevYear = isNaN(num) ? "" : Math.round(num);
       }
       saveDealers(arr);
       renderPerformance();
       renderVisite();
     }
     function removeDealer(id) {
-      if (confirm('Supprimer ce concessionnaire ?')) {
+      if (confirm("Supprimer ce concessionnaire ?")) {
         let arr = loadDealers().filter(e => e.id !== id);
         saveDealers(arr);
         renderPerformance();
         renderVisite();
       }
     }
-    document.getElementById('btn-add-row')?.addEventListener('click', () => {
+    document.getElementById("btn-add-row")?.addEventListener("click", () => {
       const arr = loadDealers();
       arr.push(createDealer());
       saveDealers(arr);
       renderPerformance();
       renderVisite();
     });
-    document.getElementById('btn-export-excel')?.addEventListener('click', () => {
+    document.getElementById("btn-export-excel")?.addEventListener("click", () => {
       exportToExcel();
     });
-    document.getElementById('search-performance')?.addEventListener('input', renderPerformance);
-
-    // === NOUVELLE ANNÉE ===
-    document.getElementById('btn-new-year')?.addEventListener('click', () => {
+    document.getElementById("search-performance")?.addEventListener("input", renderPerformance);
+    document.getElementById("btn-new-year")?.addEventListener("click", () => {
       if (
         !confirm(
-          'Voulez-vous réellement démarrer une nouvelle année ? (tous les chiffres mensuels seront remis à zéro.)'
+          "Voulez-vous réellement démarrer une nouvelle année ? (tous les chiffres mensuels seront remis à zéro.)"
         )
       ) {
         return;
       }
       const arr = loadDealers();
       arr.forEach(d => {
-        d.mois = Array(12).fill('');
-        d.moyennePrevYear = '';
+        d.mois = Array(12).fill("");
+        d.moyennePrevYear = "";
       });
       saveDealers(arr);
       renderPerformance();
       renderVisite();
-      alert('Nouvelle année démarrée : tous les champs mensuels sont remis à zéro.');
+      alert("Nouvelle année démarrée : tous les champs mensuels sont remis à zéro.");
     });
-
-    // === IMPORT EXCEL/CSV ===
-    document.getElementById('btn-import')?.addEventListener('click', () => {
-      document.getElementById('file-input')?.click();
-    });
-    document
-      .getElementById('file-input')
-      ?.addEventListener('change', handleFile, false);
-
-    function handleFile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const data = evt.target.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const firstSheetName = workbook.SheetNames[0];
-        const ws = workbook.Sheets[firstSheetName];
-        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        parseImportedData(rows);
-      };
-      if (file.name.endsWith('.csv')) {
-        reader.readAsText(file);
-      } else {
-        reader.readAsBinaryString(file);
-      }
-    }
-
-    function parseImportedData(rows) {
-      if (rows.length < 2) {
-        alert('Fichier vide ou format incorrect.');
-        return;
-      }
-      const headers = rows[0].map(h => h.toString().trim().toLowerCase());
-      const colIndex = {};
-      headers.forEach((h, i) => (colIndex[h] = i));
-      if (!('nom' in colIndex) || !('taux' in colIndex)) {
-        alert('Le fichier doit contenir au moins les colonnes “Nom” et “Taux”.');
-        return;
-      }
-      const imported = [];
-      for (let r = 1; r < rows.length; r++) {
-        const row = rows[r];
-        if (!row.length) continue;
-        const name = row[colIndex['nom']] || '';
-        if (!name.toString().trim()) continue;
-        const taux = row[colIndex['taux']] || '';
-        const moisArr = [];
-        ['janv','fév','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'].forEach((mois, idx) => {
-          if (mois in colIndex) {
-            const cell = row[colIndex[mois]] || '';
-            const str = cell.toString().trim();
-            if (str === '' || str === '-') {
-              moisArr[idx] = '';
-            } else {
-              const num = parseFloat(str.replace(/\s/g, ''));
-              moisArr[idx] = isNaN(num) ? '' : Math.round(num).toString();
-            }
-          } else {
-            moisArr[idx] = '';
-          }
-        });
-        let moyPrev = '';
-        if ('moyenne précédente' in colIndex) {
-          const val = row[colIndex['moyenne précédente']] || '';
-          const str = val.toString().trim();
-          const n = parseFloat(str);
-          moyPrev = isNaN(n) ? '' : Math.round(n);
-        }
-        let notesTxt = '';
-        if ('notes historique' in colIndex) {
-          notesTxt = row[colIndex['notes historique']] || '';
-        }
-        let notesArr = [];
-        if (notesTxt && typeof notesTxt === 'string') {
-          notesArr = notesTxt
-            .split(';')
-            .map(chunk => {
-              const parts = chunk.split('–');
-              if (parts.length >= 2) {
-                return {
-                  date: parts[0].trim(),
-                  text: parts.slice(1).join('–').trim()
-                };
-              }
-              return null;
-            })
-            .filter(x => x);
-        }
-        const dealer = createDealer();
-        dealer.name = name;
-        dealer.taux = taux;
-        dealer.mois = moisArr;
-        dealer.moyennePrevYear = moyPrev || '';
-        dealer.notes = notesArr;
-        imported.push(dealer);
-      }
-      if (!imported.length) {
-        alert('Aucun concessionnaire valide trouvé dans le fichier.');
-        return;
-      }
-      saveDealers(imported);
-      renderPerformance();
-      renderVisite();
-      alert(imported.length + ' concessionnaire(s) importé(s).');
-    }
 
     function exportToExcel() {
       const dealers = loadDealers();
       const currentYear = parseInt(getCurrentYear());
       const prevYear = currentYear - 1;
 
-      const header = ['#', 'Nom', 'Taux'];
-      ['Janv','Fév','Mars','Avr','Mai','Juin','Juil','Août','Sept','Oct','Nov','Déc'].forEach(m => header.push(m));
+      const header = ["#", "Nom", "Taux"];
+      ["Janv","Fév","Mars","Avr","Mai","Juin","Juil","Août","Sept","Oct","Nov","Déc"].forEach(m => header.push(m));
       header.push(
         `Total ${currentYear}`,
         `Moyenne ${currentYear}`,
         `Moyenne ${prevYear}`,
         `% Diff ${prevYear}-${currentYear}`,
-        'Notes historique'
+        "Notes historique"
       );
 
       const ws_data = [header];
       dealers.forEach((d, idx) => {
         const row = [idx + 1, d.name, d.taux];
-        (d.mois || Array(12).fill('')).forEach(v => {
-          if (v === '' || v === '-') {
-            row.push('');
+        (d.mois || Array(12).fill("")).forEach(v => {
+          if (v === "" || v === "-") {
+            row.push("");
           } else {
-            const n = parseFloat(v.toString().replace(/\s/g, ''));
-            row.push(isNaN(n) ? '' : Math.round(n));
+            const n = parseFloat(v.toString().replace(/\s/g, ""));
+            row.push(isNaN(n) ? "" : Math.round(n));
           }
         });
         const totCur = Math.round(totalAnnual(d.mois || []));
         const moyCur = Math.round(averageMonthly(d.mois || []));
         const moyPrev = Math.round(parseFloat(d.moyennePrevYear) || 0);
-        let diffPct = '0.0';
+        let diffPct = "0.0";
         if (moyPrev !== 0) {
           diffPct = ((moyCur - moyPrev) / moyPrev * 100).toFixed(1);
         }
-        row.push(totCur, moyCur, moyPrev, diffPct + '%');
+        row.push(totCur, moyCur, moyPrev, diffPct + "%");
         const notesText = (d.notes || [])
           .map(n => `${n.date} – ${n.text}`)
-          .join(' ; ');
+          .join(" ; ");
         row.push(notesText);
         ws_data.push(row);
       });
@@ -2365,9 +2437,11 @@
       XLSX.writeFile(wb, `suivi_performance_${currentYear}.xlsx`);
     }
 
-    // === RENDEZ-VOUS VISITE CONCESSIONNAIRE ===
+    /***********************************************************/
+    /***            Onglet “Visite concessionnaire”           ***/
+    /***********************************************************/
     function renderVisite() {
-      let search = document.getElementById('search-visite').value.trim().toLowerCase();
+      let search = document.getElementById("search-visite").value.trim().toLowerCase();
       let dealers = loadDealers().slice();
       dealers.sort((a, b) => {
         const ma = Math.round(averageMonthly(a.mois || [])) || 0;
@@ -2375,55 +2449,53 @@
         return mb - ma;
       });
       if (search) {
-        dealers = dealers.filter(d => (d.name || '').toLowerCase().includes(search));
+        dealers = dealers.filter(d => (d.name || "").toLowerCase().includes(search));
       }
       let html = `
-        <table class="crm-table">
-          <thead>
+        <table class="crm-table w-full">
+          <thead class="bg-gray-50">
             <tr>
               <th style="min-width:80px">Taux (%)</th>
               <th>Concessionnaire</th>
               <th style="min-width:120px">Moyenne ${getCurrentYear()} ($)</th>
-              <th style="min-width:120px">Visites</th>
-              <th>Jours depuis</th>
+              <th style="min-width:160px">Visites</th>
+              <th style="min-width:100px">Jours depuis</th>
               <th style="min-width:100px">Agenda</th>
-              <th style="min-width:100px">Notes</th>
+              <th style="min-width:100px">Note</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
       `;
+
       dealers.forEach(d => {
         const moyCurYear = Math.round(averageMonthly(d.mois || []));
-        const moyFmt = moyCurYear.toLocaleString('fr-FR');
-
-        // Déterminer la couleur de la pastille selon la moyenne
-        let moyColorClass = '';
-        if (moyCurYear > 15000) {
-          moyColorClass = 'chip-green';
-        } else if (moyCurYear >= 5000) {
-          moyColorClass = 'chip-yellow';
-        } else {
-          moyColorClass = 'chip-red';
-        }
+        const moyFmt = moyCurYear.toLocaleString("fr-FR");
+        const moyClass =
+          moyCurYear > 15000
+            ? "chip chip-green"
+            : moyCurYear >= 5000
+            ? "chip chip-yellow"
+            : "chip chip-red";
 
         const visits = d.visits || [];
         const totalVisits = visits.length;
-        const days = daysSinceLastVisit(visits);
-        const daysColor = getDaysColor(days);
+        const lastDate = totalVisits > 0 ? visits[visits.length - 1] : null;
+        const days = lastDate ? daysSince(lastDate) : "-";
+        const daysClass = getDaysColorClass(days);
 
         html += `
           <tr data-id="${d.id}">
             <td>
               <span class="chip ${getClaimColor(d.taux)}">
-                ${d.taux || ''} <span class="font-bold text-gray-400">%</span>
+                ${d.taux || ""} <span class="font-bold text-gray-400">%</span>
               </span>
             </td>
-            <td class="font-semibold text-md text-center">${d.name || ''}</td>
-            <td class="text-center text-lg font-semibold">
-              <span class="chip ${moyColorClass}">${moyFmt} $</span>
+            <td class="font-semibold text-md text-center">${d.name || ""}</td>
+            <td class="text-center">
+              <span class="${moyClass}">${moyFmt} $
+              </span>
             </td>
-            <!-- Visites + boutons -->
             <td>
               <button
                 class="bg-green-600 text-white px-2 py-1 rounded-lg shadow hover:bg-green-700 text-xs font-semibold"
@@ -2435,14 +2507,13 @@
                 onclick="openDatePicker('${d.id}')"
                 tabindex="0"
               >+ Date</button>
-              <!-- Champ date caché pour la saisie manuelle -->
+              <!-- Champ caché Flatpickr -->
               <input
-                type="date"
+                type="text"
                 id="input-date-${d.id}"
-                style="position:absolute; opacity:0; width:1px; height:1px; left:0; top:0;"
-                onchange="manualVisitDateChosen('${d.id}', this.value)"
+                class="hidden-input"
+                style="position:absolute; opacity:0; width:0; height:0; left:0; top:0;"
               />
-
               <div class="flex gap-1 flex-wrap mt-2 justify-center">
         `;
         if (totalVisits > 0) {
@@ -2474,8 +2545,7 @@
         html += `
               </div>
             </td>
-            <td class="font-mono font-semibold ${daysColor}">${days}</td>
-            <!-- Agenda Google Calendar -->
+            <td class="font-mono font-semibold ${daysClass}">${days}</td>
             <td>
               <button
                 onclick="addToGoogleAgenda('${d.id}')"
@@ -2484,15 +2554,12 @@
                 Agenda
               </button>
             </td>
-            <!-- Notes synchronisées -->
             <td>
               <button
                 onclick="openNotes('${d.id}')"
                 class="text-blue-600 hover:underline font-semibold text-sm"
-                tabindex="0"
               >📝</button>
             </td>
-            <!-- Supprimer Concessionnaire -->
             <td>
               <button
                 onclick="removeDealer('${d.id}')"
@@ -2504,15 +2571,31 @@
         `;
       });
       html += `</tbody></table>`;
-      document.getElementById('visite-table-container').innerHTML = html;
+      document.getElementById("visite-table-container").innerHTML = html;
+
+      // Initialiser Flatpickr sur chaque input-date-<id>
+      const visitsInputs = document.querySelectorAll("[id^='input-date-']");
+      visitsInputs.forEach(inp => {
+        if (!inp._flatpickr) {
+          const fp = flatpickr(inp, {
+            dateFormat: "Y-m-d",
+            allowInput: false,
+            onChange: function(selectedDates, dateStr) {
+              if (selectedDates.length) {
+                manualVisitDateChosen(inp.id.replace("input-date-", ""), dateStr);
+              }
+            }
+          });
+          inp._flatpickr = fp;
+        }
+      });
     }
 
-    // Fonctions utiles pour l’onglet Visite
     function addVisitToday(id) {
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
       if (d) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toISOString().split("T")[0];
         d.visits.push(today);
         saveDealers(arr);
         renderVisite();
@@ -2520,8 +2603,10 @@
       }
     }
     function openDatePicker(id) {
-      const inp = document.getElementById(`input-date-${id}`);
-      if (inp) inp.click();
+      const input = document.getElementById(`input-date-${id}`);
+      if (input && input._flatpickr) {
+        input._flatpickr.open();
+      }
     }
     function manualVisitDateChosen(id, dateStr) {
       if (dateStr && !isNaN(new Date(dateStr))) {
@@ -2546,7 +2631,7 @@
       }
     }
     function toggleAllVisits(id, btn) {
-      const existing = document.querySelector('#dropdown-visits');
+      const existing = document.querySelector("#dropdown-visits");
       if (existing) {
         existing.remove();
         return;
@@ -2571,50 +2656,27 @@
         `;
       });
       html += `<div class="text-center text-xs text-gray-500 pt-1">Cliquer en dehors pour fermer</div></div>`;
-      const pop = document.createElement('div');
+      const pop = document.createElement("div");
       pop.innerHTML = html;
       document.body.appendChild(pop.firstChild);
       function close() {
-        document.getElementById('dropdown-visits')?.remove();
-        document.body.removeEventListener('click', close, true);
+        document.getElementById("dropdown-visits")?.remove();
+        document.body.removeEventListener("click", close, true);
       }
-      setTimeout(() => document.body.addEventListener('click', close, true), 100);
+      setTimeout(() => document.body.addEventListener("click", close, true), 100);
     }
-    document.getElementById('search-visite')?.addEventListener('input', renderVisite);
+    document.getElementById("search-visite")?.addEventListener("input", renderVisite);
 
     function formatDate(dateStr) {
-      if (!dateStr) return '';
+      if (!dateStr) return "";
       const d = new Date(dateStr);
-      if (isNaN(d)) return '';
-      return d.toLocaleDateString('fr-CA');
+      if (isNaN(d)) return "";
+      return d.toLocaleDateString("fr-CA");
     }
-    function getClaimColor(val) {
-      const num = parseFloat(val);
-      if (isNaN(num)) return 'chip-gray';
-      if (num < 30) return 'chip-green';
-      if (num <= 40) return 'chip-yellow';
-      return 'chip-red';
-    }
-    function daysSinceLastVisit(visits) {
-      if (!visits || visits.length === 0) return '-';
-      const last = new Date(visits[visits.length - 1]);
-      const now = new Date();
-      const diff = Math.floor((now - last) / (1000 * 60 * 60 * 24));
-      return diff >= 0 ? diff : '-';
-    }
-    function getDaysColor(days) {
-      const n = parseInt(days);
-      if (isNaN(n) || days === '-') return '';
-      if (n <= 30) return 'bg-green-100 text-green-800 border-green-200';
-      if (n <= 60) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      return 'bg-red-100 text-red-800 border-red-200';
-    }
-
-    // === GOOGLE AGENDA ===
     function addToGoogleAgenda(id) {
       const now = new Date();
       function pad(n) {
-        return String(n).padStart(2, '0');
+        return String(n).padStart(2, "0");
       }
       const yyyy = now.getUTCFullYear();
       const mm = pad(now.getUTCMonth() + 1);
@@ -2631,32 +2693,34 @@
 
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
-      const title = encodeURIComponent(d ? `Visite : ${d.name}` : 'Visite concessionnaire');
-      const details = encodeURIComponent('Visite enregistrée via CRM.');
+      const title = encodeURIComponent(d ? `Visite : ${d.name}` : "Visite concessionnaire");
+      const details = encodeURIComponent("Visite enregistrée via CRM.");
       const url = `https://calendar.google.com/calendar/r/eventedit?text=${title}&dates=${start}/${end}&details=${details}&sf=true`;
-      window.open(url, '_blank');
+      window.open(url, "_blank");
     }
 
-    // === POPUP NOTES & INFOS ===
+    /***********************************************************/
+    /***                Popup Notes & Infos                   ***/
+    /***********************************************************/
     function openNotes(id) {
-      const overlay = document.getElementById('notes-overlay');
-      const titleEl = document.getElementById('notes-title');
-      const listEl = document.getElementById('notes-list');
-      const textarea = document.getElementById('notes-input');
-      const addBtn = document.getElementById('btn-add-note');
-      const exportBtn = document.getElementById('btn-export-notes');
+      const overlay = document.getElementById("notes-overlay");
+      const titleEl = document.getElementById("notes-title");
+      const listEl = document.getElementById("notes-list");
+      const textarea = document.getElementById("notes-input");
+      const addBtn = document.getElementById("btn-add-note");
+      const exportBtn = document.getElementById("btn-export-notes");
 
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
       if (!d) return;
 
       titleEl.textContent = `Notes : ${d.name}`;
-      listEl.innerHTML = '';
+      listEl.innerHTML = "";
       d.notes = d.notes || [];
       d.notes.sort((a, b) => new Date(b.date) - new Date(a.date));
       d.notes.forEach((n, i) => {
-        const div = document.createElement('div');
-        div.className = 'note-item';
+        const div = document.createElement("div");
+        div.className = "note-item";
         div.innerHTML = `
           <div class="note-date">${n.date}</div>
           <div class="note-text">${n.text}</div>
@@ -2664,50 +2728,61 @@
         `;
         listEl.appendChild(div);
       });
-      textarea.value = '';
+      textarea.value = "";
       addBtn.onclick = () => addNote(id);
       exportBtn.onclick = () => exportNotesDocx(id);
-      overlay.style.display = 'flex';
+      overlay.style.display = "flex";
     }
     function openInfo(id) {
-      const overlay = document.getElementById('info-overlay');
-      const titleEl = document.getElementById('info-title');
-      const ownerInput = document.getElementById('info-owner');
-      const ownerEmailInput = document.getElementById('info-owner-email');
-      const accountsInput = document.getElementById('info-accounts');
-      const accountsEmailInput = document.getElementById('info-accounts-email');
-      const fniInput = document.getElementById('info-fni');
-      const fniInput2 = document.getElementById('info-fni-2');
-      const fniInput3 = document.getElementById('info-fni-3');
-      const dirServiceInput = document.getElementById('info-dir');
-      const dirServiceEmailInput = document.getElementById('info-dir-email');
-      const saveBtn = document.getElementById('btn-save-info');
+      const overlay = document.getElementById("info-overlay");
+      const titleEl = document.getElementById("info-title");
+      const ownerInput = document.getElementById("info-owner");
+      const ownerEmailInput = document.getElementById("info-owner-email");
+      const accountsInput = document.getElementById("info-accounts");
+      const accountsEmailInput = document.getElementById("info-accounts-email");
+      const fniInput = document.getElementById("info-fni");
+      const dirServiceInput = document.getElementById("info-dir");
+      const dirServiceEmailInput = document.getElementById("info-dir-email");
+      const df1Input = document.getElementById("info-df1");
+      const df1EmailInput = document.getElementById("info-df1-email");
+      const df2Input = document.getElementById("info-df2");
+      const df2EmailInput = document.getElementById("info-df2-email");
+      const df3Input = document.getElementById("info-df3");
+      const df3EmailInput = document.getElementById("info-df3-email");
+      const saveBtn = document.getElementById("btn-save-info");
 
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
       if (!d) return;
       titleEl.textContent = `Infos : ${d.name}`;
-      ownerInput.value = d.info.proprietaire || '';
-      ownerEmailInput.value = d.info.email_proprietaire || '';
-      accountsInput.value = d.info.comptabilite || '';
-      accountsEmailInput.value = d.info.email_comptabilite || '';
-      fniInput.value = d.info.fni || '';
-      fniInput2.value = d.info.fni2 || '';
-      fniInput3.value = d.info.fni3 || '';
-      dirServiceInput.value = d.info.dir_service || '';
-      dirServiceEmailInput.value = d.info.email_dir_service || '';
+      ownerInput.value = d.info.proprietaire || "";
+      ownerEmailInput.value = d.info.email_proprietaire || "";
+      accountsInput.value = d.info.comptabilite || "";
+      accountsEmailInput.value = d.info.email_comptabilite || "";
+      fniInput.value = d.info.fni || "";
+      dirServiceInput.value = d.info.dir_service || "";
+      dirServiceEmailInput.value = d.info.email_dir_service || "";
+
+      const dfs = d.info.directeurs_financiers || [];
+      df1Input.value = dfs[0]?.nom || "";
+      df1EmailInput.value = dfs[0]?.email || "";
+      df2Input.value = dfs[1]?.nom || "";
+      df2EmailInput.value = dfs[1]?.email || "";
+      df3Input.value = dfs[2]?.nom || "";
+      df3EmailInput.value = dfs[2]?.email || "";
+
       saveBtn.onclick = () => saveInfo(id);
-      overlay.style.display = 'flex';
+      overlay.style.display = "flex";
     }
     function closeNotes() {
-      document.getElementById('notes-overlay').style.display = 'none';
-      document.getElementById('info-overlay').style.display = 'none';
+      document.getElementById("notes-overlay").style.display = "none";
+      document.getElementById("info-overlay").style.display = "none";
     }
     function addNote(id) {
-      const textarea = document.getElementById('notes-input');
+      const textarea = document.getElementById("notes-input");
       const text = textarea.value.trim();
       if (!text) return;
-      const date = new Date().toISOString().split('T')[0];
+      const date = new Date().toISOString().split("T")[0];
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
       if (d) {
@@ -2731,7 +2806,7 @@
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
       if (!d || !d.notes || !d.notes.length) {
-        alert('Pas de notes à exporter.');
+        alert("Pas de notes à exporter.");
         return;
       }
       const doc = new Document({
@@ -2768,8 +2843,8 @@
         ]
       });
       Packer.toBlob(doc).then(blob => {
-        const fileName = `Notes_${d.name.replace(/\s+/g, '_')}.docx`;
-        const link = document.createElement('a');
+        const fileName = `Notes_${d.name.replace(/\s+/g, "_")}.docx`;
+        const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = fileName;
         link.click();
@@ -2777,15 +2852,20 @@
       });
     }
     function saveInfo(id) {
-      const ownerInput = document.getElementById('info-owner');
-      const ownerEmailInput = document.getElementById('info-owner-email');
-      const accountsInput = document.getElementById('info-accounts');
-      const accountsEmailInput = document.getElementById('info-accounts-email');
-      const fniInput = document.getElementById('info-fni');
-      const fniInput2 = document.getElementById('info-fni-2');
-      const fniInput3 = document.getElementById('info-fni-3');
-      const dirServiceInput = document.getElementById('info-dir');
-      const dirServiceEmailInput = document.getElementById('info-dir-email');
+      const ownerInput = document.getElementById("info-owner");
+      const ownerEmailInput = document.getElementById("info-owner-email");
+      const accountsInput = document.getElementById("info-accounts");
+      const accountsEmailInput = document.getElementById("info-accounts-email");
+      const fniInput = document.getElementById("info-fni");
+      const dirServiceInput = document.getElementById("info-dir");
+      const dirServiceEmailInput = document.getElementById("info-dir-email");
+      const df1Input = document.getElementById("info-df1");
+      const df1EmailInput = document.getElementById("info-df1-email");
+      const df2Input = document.getElementById("info-df2");
+      const df2EmailInput = document.getElementById("info-df2-email");
+      const df3Input = document.getElementById("info-df3");
+      const df3EmailInput = document.getElementById("info-df3-email");
+
       const arr = loadDealers();
       const d = arr.find(e => e.id === id);
       if (d) {
@@ -2794,10 +2874,21 @@
         d.info.comptabilite = accountsInput.value.trim();
         d.info.email_comptabilite = accountsEmailInput.value.trim();
         d.info.fni = fniInput.value.trim();
-        d.info.fni2 = fniInput2.value.trim();
-        d.info.fni3 = fniInput3.value.trim();
         d.info.dir_service = dirServiceInput.value.trim();
         d.info.email_dir_service = dirServiceEmailInput.value.trim();
+
+        const dfArray = [];
+        if (df1Input.value.trim() || df1EmailInput.value.trim()) {
+          dfArray.push({ nom: df1Input.value.trim(), email: df1EmailInput.value.trim() });
+        }
+        if (df2Input.value.trim() || df2EmailInput.value.trim()) {
+          dfArray.push({ nom: df2Input.value.trim(), email: df2EmailInput.value.trim() });
+        }
+        if (df3Input.value.trim() || df3EmailInput.value.trim()) {
+          dfArray.push({ nom: df3Input.value.trim(), email: df3EmailInput.value.trim() });
+        }
+        d.info.directeurs_financiers = dfArray;
+
         saveDealers(arr);
         closeNotes();
       }
@@ -2809,7 +2900,9 @@
       }
     }
 
-    // === CALCULATRICE FINANCIÈRE ===
+    /***********************************************************/
+    /***               Calculatrice financière               ***/
+    /***********************************************************/
     function calcAmortissement(montant, tauxAnnuel, annees) {
       if (montant > 0 && tauxAnnuel > 0 && annees > 0) {
         const mois = annees * 12;
@@ -2822,81 +2915,81 @@
       return 0;
     }
     function updateCompInterest() {
-      const montant = parseFloat(document.getElementById('comp-montant').value) || 0;
+      const montant = parseFloat(document.getElementById("comp-montant").value) || 0;
       const tauxAnnuel =
-        parseFloat(document.getElementById('comp-taux').value) || 0;
-      const annees = parseInt(document.getElementById('comp-annees').value) || 0;
+        parseFloat(document.getElementById("comp-taux").value) || 0;
+      const annees = parseInt(document.getElementById("comp-annees").value) || 0;
       let interetGagne = 0;
       if (montant > 0 && tauxAnnuel > 0 && annees > 0) {
         const montantFinal = montant * Math.pow(1 + tauxAnnuel / 100, annees);
         interetGagne = montantFinal - montant;
         interetGagne = Math.round(interetGagne);
-        document.getElementById('comp-total').textContent =
-          interetGagne.toLocaleString('fr-CA', {
-            style: 'currency',
-            currency: 'CAD',
+        document.getElementById("comp-total").textContent =
+          interetGagne.toLocaleString("fr-CA", {
+            style: "currency",
+            currency: "CAD",
             maximumFractionDigits: 0
           });
       } else {
-        document.getElementById('comp-total').textContent = '0 $';
+        document.getElementById("comp-total").textContent = "0 $";
       }
       return interetGagne;
     }
     function updateEmpInterest() {
-      const montant = parseFloat(document.getElementById('emp-montant').value) || 0;
+      const montant = parseFloat(document.getElementById("emp-montant").value) || 0;
       const tauxAnnuel =
-        parseFloat(document.getElementById('emp-taux').value) || 0;
-      const annees = parseInt(document.getElementById('emp-annees').value) || 0;
+        parseFloat(document.getElementById("emp-taux").value) || 0;
+      const annees = parseInt(document.getElementById("emp-annees").value) || 0;
       let interetsPayes = 0;
       if (montant > 0 && tauxAnnuel > 0 && annees > 0) {
         interetsPayes = calcAmortissement(montant, tauxAnnuel, annees);
         interetsPayes = Math.round(interetsPayes);
-        document.getElementById('emp-total').textContent =
-          interetsPayes.toLocaleString('fr-CA', {
-            style: 'currency',
-            currency: 'CAD',
+        document.getElementById("emp-total").textContent =
+          interetsPayes.toLocaleString("fr-CA", {
+            style: "currency",
+            currency: "CAD",
             maximumFractionDigits: 0
           });
       } else {
-        document.getElementById('emp-total').textContent = '0 $';
+        document.getElementById("emp-total").textContent = "0 $";
       }
       return interetsPayes;
     }
     function updateMargeInterest() {
-      const montant = parseFloat(document.getElementById('marge-montant').value) || 0;
-      const taux = parseFloat(document.getElementById('marge-taux').value) || 0;
-      const annees = parseInt(document.getElementById('marge-annees').value) || 0;
+      const montant = parseFloat(document.getElementById("marge-montant").value) || 0;
+      const taux = parseFloat(document.getElementById("marge-taux").value) || 0;
+      const annees = parseInt(document.getElementById("marge-annees").value) || 0;
       let interets = 0;
       if (montant > 0 && taux > 0 && annees > 0) {
         interets = calcAmortissement(montant, taux, annees);
         interets = Math.round(interets);
-        document.getElementById('marge-total').textContent =
-          interets.toLocaleString('fr-CA', {
-            style: 'currency',
-            currency: 'CAD',
+        document.getElementById("marge-total").textContent =
+          interets.toLocaleString("fr-CA", {
+            style: "currency",
+            currency: "CAD",
             maximumFractionDigits: 0
           });
       } else {
-        document.getElementById('marge-total').textContent = '0 $';
+        document.getElementById("marge-total").textContent = "0 $";
       }
       return interets;
     }
     function updatePretInterest() {
-      const montant = parseFloat(document.getElementById('pret-montant').value) || 0;
-      const taux = parseFloat(document.getElementById('pret-taux').value) || 0;
-      const annees = parseInt(document.getElementById('pret-annees').value) || 0;
+      const montant = parseFloat(document.getElementById("pret-montant").value) || 0;
+      const taux = parseFloat(document.getElementById("pret-taux").value) || 0;
+      const annees = parseInt(document.getElementById("pret-annees").value) || 0;
       let interets = 0;
       if (montant > 0 && taux > 0 && annees > 0) {
         interets = calcAmortissement(montant, taux, annees);
         interets = Math.round(interets);
-        document.getElementById('pret-total').textContent =
-          interets.toLocaleString('fr-CA', {
-            style: 'currency',
-            currency: 'CAD',
+        document.getElementById("pret-total").textContent =
+          interets.toLocaleString("fr-CA", {
+            style: "currency",
+            currency: "CAD",
             maximumFractionDigits: 0
           });
       } else {
-        document.getElementById('pret-total').textContent = '0 $';
+        document.getElementById("pret-total").textContent = "0 $";
       }
       return interets;
     }
@@ -2904,33 +2997,35 @@
       const compInteret = updateCompInterest();
       const empInteret = updateEmpInterest();
       const diff = compInteret - empInteret;
-      let signe = '';
-      if (diff > 0) signe = '+';
-      document.getElementById('diff-box').textContent =
-        `Différence entre les deux options : ${signe}${Math.round(diff).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}`;
+      let signe = "";
+      if (diff > 0) signe = "+";
+      document.getElementById("diff-box").textContent =
+        `Différence entre les deux options : ${signe}${Math.round(diff).toLocaleString("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 })}`;
 
       const interetMarge = updateMargeInterest();
       const interetPret = updatePretInterest();
-      const margeAnnees = parseInt(document.getElementById('marge-annees').value) || 0;
+      const margeAnnees = parseInt(document.getElementById("marge-annees").value) || 0;
       let diffPer2Weeks = 0;
       if (margeAnnees > 0) diffPer2Weeks = (interetPret - interetMarge) / (margeAnnees * 26);
       diffPer2Weeks = Math.round(diffPer2Weeks);
-      document.getElementById('compare-diff-per-two-weeks').textContent =
-        `Différence aux deux semaines : ${diffPer2Weeks >= 0 ? '+' : ''}${diffPer2Weeks.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}`;
+      document.getElementById("compare-diff-per-two-weeks").textContent =
+        `Différence aux deux semaines : ${diffPer2Weeks >= 0 ? "+" : ""}${diffPer2Weeks.toLocaleString("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 })}`;
     }
     function initializeCalculatrice() {
       [
-        'comp-montant','comp-taux','comp-annees',
-        'emp-montant','emp-taux','emp-annees',
-        'marge-montant','marge-taux','marge-annees',
-        'pret-montant','pret-taux','pret-annees'
+        "comp-montant","comp-taux","comp-annees",
+        "emp-montant","emp-taux","emp-annees",
+        "marge-montant","marge-taux","marge-annees",
+        "pret-montant","pret-taux","pret-annees"
       ].forEach(id => {
-        document.getElementById(id)?.addEventListener('input', updateAllCalc);
+        document.getElementById(id)?.addEventListener("input", updateAllCalc);
       });
       updateAllCalc();
     }
 
-    // === OUTIL VISUEL GARANTIE ===
+    /***********************************************************/
+    /***            Outil Visuel Garantie                     ***/
+    /***********************************************************/
     const configG = {
       yearsMin: 0,
       yearsMax: 15,
@@ -2943,13 +3038,13 @@
       graphHeight: 460
     };
     function initializeGraphGarantie() {
-      const dateMise = document.getElementById('date-mise-en-service');
-      const dateAuj = document.getElementById('date-aujourd’hui');
-      const kmAuj = document.getElementById('km-aujourd’hui');
-      const anneesProj = document.getElementById('annees-projetees');
-      const kmPar = document.getElementById('km-par-an');
+      const dateMise = document.getElementById("date-mise-en-service");
+      const dateAuj = document.getElementById("date-aujourd’hui");
+      const kmAuj = document.getElementById("km-aujourd’hui");
+      const anneesProj = document.getElementById("annees-projetees");
+      const kmPar = document.getElementById("km-par-an");
 
-      ['input', 'change'].forEach(ev => {
+      ["input", "change"].forEach(ev => {
         dateMise?.addEventListener(ev, () => {
           updateKmProjete();
           drawGraph();
@@ -2969,26 +3064,26 @@
       window.onload = function () {
         const today = new Date();
         const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        if (dateMise && !dateMise.value) dateMise.value = '2023-01-01';
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        if (dateMise && !dateMise.value) dateMise.value = "2023-01-01";
         if (dateAuj) dateAuj.value = `${yyyy}-${mm}-${dd}`;
         updateKmProjete();
         drawGraph();
       };
     }
     function updateKmProjete() {
-      const anneesProj = document.getElementById('annees-projetees');
-      const kmPar = document.getElementById('km-par-an');
-      const kmProjete = document.getElementById('km-projeté');
+      const anneesProj = document.getElementById("annees-projetees");
+      const kmPar = document.getElementById("km-par-an");
+      const kmProjete = document.getElementById("km-projeté");
       const nbAn = parseInt(anneesProj.value) || 0;
       const kmYear = parseInt(kmPar.value) || 0;
       kmProjete.value = nbAn * kmYear;
     }
     function drawGraph() {
-      const canvas = document.getElementById('canvas-graph');
+      const canvas = document.getElementById("canvas-graph");
       if (!canvas) return;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       const {
@@ -3007,12 +3102,12 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Fond blanc pour la zone de tracé
-      ctx.fillStyle = '#fff';
+      ctx.fillStyle = "#fff";
       ctx.fillRect(paddingLeft - 15, 15, graphWidth + 30, graphHeight + 30);
 
       // Tracer les axes principaux
       ctx.save();
-      ctx.strokeStyle = '#004472';
+      ctx.strokeStyle = "#004472";
       ctx.lineWidth = 3.2;
       ctx.beginPath();
       ctx.moveTo(paddingLeft, 15);
@@ -3021,7 +3116,7 @@
       ctx.restore();
 
       ctx.save();
-      ctx.strokeStyle = '#444';
+      ctx.strokeStyle = "#444";
       ctx.lineWidth = 2.0;
       ctx.beginPath();
       ctx.moveTo(paddingLeft, graphHeight + 15);
@@ -3035,13 +3130,13 @@
         ctx.beginPath();
         ctx.moveTo(x, graphHeight + 15);
         ctx.lineTo(x, graphHeight + 35);
-        ctx.strokeStyle = '#888';
+        ctx.strokeStyle = "#888";
         ctx.lineWidth = 1.4;
         ctx.stroke();
-        ctx.fillStyle = '#444';
-        ctx.font = '20px Segoe UI';
-        ctx.textAlign = 'center';
-        ctx.fillText(i + 'a', x, graphHeight + 52);
+        ctx.fillStyle = "#444";
+        ctx.font = "20px Segoe UI";
+        ctx.textAlign = "center";
+        ctx.fillText(i + "a", x, graphHeight + 52);
       }
 
       // Graduations sur l’axe des kilomètres
@@ -3050,13 +3145,13 @@
         ctx.beginPath();
         ctx.moveTo(paddingLeft - 20, y);
         ctx.lineTo(paddingLeft, y);
-        ctx.strokeStyle = '#888';
+        ctx.strokeStyle = "#888";
         ctx.lineWidth = 1.4;
         ctx.stroke();
-        ctx.fillStyle = '#444';
-        ctx.font = '19px Segoe UI';
-        ctx.textAlign = 'right';
-        ctx.fillText(k.toLocaleString('fr-CA'), paddingLeft - 22, y + 6);
+        ctx.fillStyle = "#444";
+        ctx.font = "19px Segoe UI";
+        ctx.textAlign = "right";
+        ctx.fillText(k.toLocaleString("fr-CA"), paddingLeft - 22, y + 6);
       }
 
       // Zone “Garantie de base” (3 ans / 60 000 km)
@@ -3064,8 +3159,8 @@
       const baseY1 = graphHeight + 15;
       const baseX2 = paddingLeft + (graphWidth * (3 - yearsMin)) / (yearsMax - yearsMin);
       const baseY2 = graphHeight + 15 - (graphHeight * (60000 - kmMin)) / (kmMax - kmMin);
-      ctx.fillStyle = '#A3D8F4';
-      ctx.strokeStyle = '#5A99B6';
+      ctx.fillStyle = "#A3D8F4";
+      ctx.strokeStyle = "#5A99B6";
       ctx.lineWidth = 4.6;
       ctx.beginPath();
       ctx.rect(baseX1, baseY2, baseX2 - baseX1, baseY1 - baseY2);
@@ -3073,12 +3168,12 @@
       ctx.stroke();
 
       // Zone “Garantie déjà consommée” (hachures)
-      const dateMise = document.getElementById('date-mise-en-service');
-      const dateAuj = document.getElementById('date-aujourd’hui');
+      const dateMise = document.getElementById("date-mise-en-service");
+      const dateAuj = document.getElementById("date-aujourd’hui");
       let anneesCons = getYearsSince(dateMise.value, dateAuj.value);
       if (anneesCons < 0) anneesCons = 0;
       if (anneesCons > yearsMax) anneesCons = yearsMax;
-      let kmCons = parseInt(document.getElementById('km-aujourd’hui').value) || 0;
+      let kmCons = parseInt(document.getElementById("km-aujourd’hui").value) || 0;
       if (kmCons < kmMin) kmCons = kmMin;
       if (kmCons > kmMax) kmCons = kmMax;
       const hX2 =
@@ -3090,7 +3185,7 @@
         ctx.beginPath();
         ctx.rect(baseX1, hY2, hX2 - baseX1, baseY1 - hY2);
         ctx.clip();
-        ctx.strokeStyle = '#E06767';
+        ctx.strokeStyle = "#E06767";
         ctx.lineWidth = 10;
         for (let i = -graphHeight; i < graphWidth + graphHeight; i += 28) {
           ctx.beginPath();
@@ -3102,10 +3197,10 @@
       }
 
       // Zone “Projection future”
-      const nbAns = parseInt(document.getElementById('annees-projetees').value) || 0;
-      const kmParAn = parseInt(document.getElementById('km-par-an').value) || 0;
+      const nbAns = parseInt(document.getElementById("annees-projetees").value) || 0;
+      const kmParAn = parseInt(document.getElementById("km-par-an").value) || 0;
       const kmTotal = nbAns * kmParAn;
-      const kmProjete = document.getElementById('km-projeté');
+      const kmProjete = document.getElementById("km-projeté");
       kmProjete.value = kmTotal;
 
       let debutAn = anneesCons;
@@ -3133,7 +3228,7 @@
       // Ligne pointillée vers début projection
       ctx.save();
       ctx.setLineDash([12, 8]);
-      ctx.strokeStyle = '#c8102e99';
+      ctx.strokeStyle = "#c8102e99";
       ctx.lineWidth = 2.8;
       ctx.beginPath();
       ctx.moveTo(paddingLeft, graphHeight + 15);
@@ -3145,14 +3240,18 @@
       // Sous garantie (hachurage vert) – jusqu’à la limite de la garantie
       const sgFinAn = Math.min(garantieAn, finAn);
       const sgFinKm =
-        Math.min(garantieKm, debutKm + Math.min(nbAns, garantieAn - debutAn) * kmParAn);
+        Math.min(
+          garantieKm,
+          debutKm + Math.min(nbAns, garantieAn - debutAn) * kmParAn
+        );
       const sX2 = paddingLeft + (graphWidth * (sgFinAn - yearsMin)) / (yearsMax - yearsMin);
       const sY2 =
-        graphHeight + 15 - (graphHeight * (sgFinKm - kmMin)) / (kmMax - kmMin);
+        graphHeight + 15 -
+        (graphHeight * (sgFinKm - kmMin)) / (kmMax - kmMin);
       if (sgFinAn > debutAn && sgFinKm > debutKm) {
         const eX = Math.min(sX2, baseX2);
         const eY = Math.min(sY2, baseY2);
-        drawHachureRect(pX1, pY1, eX, eY, '#00B245', 12, 4, 45);
+        drawHachureRect(pX1, pY1, eX, eY, "#00B245", 12, 4, 45);
       }
 
       // Hors garantie (zone verte claire)
@@ -3161,8 +3260,8 @@
         const startY = Math.max(sY2, gY);
         if (pX2 > startX && startY > pY2) {
           ctx.save();
-          ctx.fillStyle = '#A8E6B6';
-          ctx.strokeStyle = '#54BB7C';
+          ctx.fillStyle = "#A8E6B6";
+          ctx.strokeStyle = "#54BB7C";
           ctx.lineWidth = 4.6;
           ctx.beginPath();
           ctx.rect(startX, pY2, pX2 - startX, startY - pY2);
@@ -3176,30 +3275,29 @@
       ctx.save();
       ctx.beginPath();
       ctx.arc(pX1, pY1, 7, 0, 2 * Math.PI, false);
-      ctx.fillStyle = '#C8102E';
-      ctx.strokeStyle = '#fff';
+      ctx.fillStyle = "#C8102E";
+      ctx.strokeStyle = "#fff";
       ctx.lineWidth = 2.4;
-      ctx.shadowColor = '#C8102E88';
+      ctx.shadowColor = "#C8102E88";
       ctx.shadowBlur = 10;
       ctx.fill();
       ctx.stroke();
       ctx.restore();
 
-      // Créer un “glow” animé en HTML/CSS si nécessaire
-      let htmlGlow = document.getElementById('point-glow');
+      let htmlGlow = document.getElementById("point-glow");
       if (!htmlGlow) {
-        htmlGlow = document.createElement('div');
-        htmlGlow.id = 'point-glow';
-        htmlGlow.className = 'point-glow';
-        htmlGlow.style.position = 'absolute';
-        htmlGlow.style.pointerEvents = 'none';
-        htmlGlow.style.width = '18px';
-        htmlGlow.style.height = '18px';
-        htmlGlow.style.borderRadius = '50%';
-        htmlGlow.style.background = '#C8102E';
-        htmlGlow.style.border = '3px solid #fff';
-        htmlGlow.style.boxShadow = '0 0 12px 3px rgba(215,0,25,0.6)';
-        document.querySelector('.graph-area').appendChild(htmlGlow);
+        htmlGlow = document.createElement("div");
+        htmlGlow.id = "point-glow";
+        htmlGlow.className = "point-glow";
+        htmlGlow.style.position = "absolute";
+        htmlGlow.style.pointerEvents = "none";
+        htmlGlow.style.width = "18px";
+        htmlGlow.style.height = "18px";
+        htmlGlow.style.borderRadius = "50%";
+        htmlGlow.style.background = "#C8102E";
+        htmlGlow.style.border = "3px solid #fff";
+        htmlGlow.style.boxShadow = "0 0 12px 3px rgba(215,0,25,0.6)";
+        document.querySelector(".graph-area").appendChild(htmlGlow);
       }
       htmlGlow.style.left = `${pX1 - 9}px`;
       htmlGlow.style.top = `${pY1 - 9}px`;
@@ -3210,10 +3308,10 @@
       const diff = d2 - d1;
       return diff > 0 ? diff / (365.25 * 24 * 60 * 60 * 1000) : 0;
     }
-    function drawHachureRect(x1, y1, x2, y2, color = '#00b245', spacing = 15, width = 4, angle = 45) {
-      const canvas = document.getElementById('canvas-graph');
+    function drawHachureRect(x1, y1, x2, y2, color = "#00b245", spacing = 15, width = 4, angle = 45) {
+      const canvas = document.getElementById("canvas-graph");
       if (!canvas) return;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
       ctx.save();
       ctx.beginPath();
@@ -3231,71 +3329,17 @@
       }
       ctx.restore();
     }
-    document.getElementById('btn-export-garantie')?.addEventListener('click', () => {
-      const canvas = document.getElementById('canvas-graph');
-      const htmlGlow = document.getElementById('point-glow');
-      if (htmlGlow) htmlGlow.style.display = 'none';
+    document.getElementById("btn-export-garantie")?.addEventListener("click", () => {
+      const canvas = document.getElementById("canvas-graph");
+      const htmlGlow = document.getElementById("point-glow");
+      if (htmlGlow) htmlGlow.style.display = "none";
       setTimeout(() => {
-        const link = document.createElement('a');
-        link.download = 'graphique_garantie.png';
+        const link = document.createElement("a");
+        link.download = "graphique_garantie.png";
         link.href = canvas.toDataURL();
         link.click();
-        if (htmlGlow) htmlGlow.style.display = 'block';
+        if (htmlGlow) htmlGlow.style.display = "block";
       }, 50);
-    });
-
-
-    // ------------------------------------------------------------
-    // BACKUP AUTOMATIQUE SUR GOOGLE DRIVE VIA APPS SCRIPT
-    // ------------------------------------------------------------
-    const BACKUP_URL = 'https://script.google.com/macros/s/AKfycbw2Qcf_fO3d1LKkYb6adradD2v2G8iyFMSDdn7z5E4IRDiDIVcXUefiKXbJx8GufU7x/exec';
-
-    function getCRMDataObject() {
-      const raw = localStorage.getItem('crm_data');
-      if (!raw) return {};
-      try {
-        return JSON.parse(raw);
-      } catch (e) {
-        console.error('Impossible de parser le JSON de localStorage:', e);
-        return {};
-      }
-    }
-
-    async function backupToGoogleDrive() {
-      const crmObj = getCRMDataObject();
-      const jsonString = JSON.stringify(crmObj);
-
-      try {
-        const res = await fetch(BACKUP_URL, {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: jsonString
-        });
-        if (!res.ok) {
-          console.error('Erreur HTTP lors de la sauvegarde sur Drive:', res.status, res.statusText);
-          return;
-        }
-        const data = await res.json();
-        if (data.status === 'success') {
-          console.log('Sauvegarde CRM réussie sur Drive ✔️');
-        } else {
-          console.warn('Serveur Apps Script a renvoyé une erreur :', data);
-        }
-      } catch (err) {
-        console.error('Erreur lors de l’appel fetch() backupToGoogleDrive:', err);
-      }
-    }
-
-    // Exécuter une première sauvegarde au chargement et planifier un cron toutes les 24 h
-    window.addEventListener('DOMContentLoaded', () => {
-      backupToGoogleDrive();
-      const MILLISECONDES_PAR_JOUR = 24 * 60 * 60 * 1000;
-      setInterval(() => {
-        backupToGoogleDrive();
-      }, MILLISECONDES_PAR_JOUR);
     });
   </script>
 </body>
