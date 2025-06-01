@@ -1,0 +1,3302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>CRM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CSS pour styles rapides -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- XLSX pour l’import/export Excel/CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- Font Awesome pour quelques icônes -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <!-- docx.js pour exporter les notes en .docx -->
+  <script src="https://cdn.jsdelivr.net/npm/docx@7.2.1/build/index.umd.min.js"></script>
+
+  <style>
+    /* === BODY ET FOND D’ÉCRAN === */
+    body {
+      min-height: 100vh;
+      background: #dc2626;
+      position: relative;
+      overflow-x: hidden;
+      font-family: 'Inter', Arial, sans-serif;
+      color: #222c38;
+    }
+
+    /* Image de la voiture (derrière) */
+    .bg-car-visible {
+      position: fixed;
+      z-index: 0;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('c9cc038b-b945-47e7-bf18-6a62e86cb85b.png')
+        center center / cover no-repeat;
+      opacity: 0.65;
+      pointer-events: none;
+    }
+    /* Calque rouge semi-transparent par-dessus */
+    .bg-red-overlay {
+      position: fixed;
+      z-index: 1;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(220, 38, 38, 0.15);
+      pointer-events: none;
+    }
+
+    /* === CARTES CRM (volets) === */
+    .crm-card {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 1.7rem;
+      box-shadow: 0 8px 32px rgba(44, 0, 0, 0.13);
+      position: relative;
+      z-index: 10;
+      padding: 1rem;
+    }
+
+    /* === ONGLETS DE NAVIGATION === */
+    .nav-tab {
+      color: #dc2626;
+      font-weight: 700;
+      border-radius: 1.1rem 1.1rem 0 0;
+      transition: all 0.18s;
+      font-size: 1.15rem;
+      letter-spacing: 0.5px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 2px 10px #dc262635;
+      margin: 0 0.3rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .nav-tab:hover {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .nav-active {
+      background: #dc2626 !important;
+      color: #fff !important;
+      box-shadow: 0 2px 10px #dc262670;
+    }
+
+    /* === LOGO / TITRE “CRM” === */
+    .crm-logo-text {
+      font-family: 'Oswald', 'Montserrat', Arial, sans-serif;
+      letter-spacing: 1.5px;
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 1px 3px 12px #b91c1c99;
+      margin-bottom: 0.3em;
+      position: relative;
+      z-index: 20;
+      text-align: center;
+    }
+    @media (max-width: 700px) {
+      .crm-logo-text {
+        font-size: 1.5rem;
+      }
+      .nav-tab {
+        font-size: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+
+    /* === TABLEAUX À DÉFILEMENT HORIZONTAL === */
+    .crm-table-scroll {
+      overflow-x: auto;
+      width: 100%;
+      padding-left: 1.5vw;
+      padding-right: 1.5vw;
+    }
+    table.crm-table {
+      min-width: 1500px;
+      width: 100%;
+      max-width: 100vw;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 18px #0001;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    th, td {
+      vertical-align: middle;
+      padding: 8px;
+      border-bottom: 1px solid #E5E7EB;
+      text-align: center;
+    }
+    th {
+      background: #F3F4F6;
+      color: #1F2937;
+      font-weight: 600;
+      font-size: 0.96rem;
+    }
+    td {
+      font-size: 0.94rem;
+    }
+
+    /* === PASTILLES COLORÉES === */
+    .chip {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-weight: 700;
+      min-width: 44px;
+      font-size: 0.9rem;
+    }
+    .chip-green  { background: #D1FAE5 !important; color: #047857 !important; }
+    .chip-yellow { background: #FEF9C3 !important; color: #A16207 !important; }
+    .chip-red    { background: #FECACA !important; color: #BE123C !important; }
+    .chip-gray   { background: #F3F4F6 !important; color: #374151 !important; }
+    .chip-blue   { background: #A3D8F4 !important; color: #0C4A6E !important; }
+
+    /* Désactive les flèches par défaut des <input type="number"> */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-input-placeholder { color: #999; }
+    input[type="number"]:-ms-input-placeholder { color: #999; }
+    input[type="number"]::placeholder { color: #999; }
+
+    /* === STYLES SPÉCIFIQUES AU RESTE DU CRM (Notes, Visites, Calculatrice, etc.) === */
+
+    /* NOTES / INFOS POPUP */
+    .notes-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .notes-container {
+      background: white;
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 600px;
+      max-height: 85%;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .notes-header h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #dc2626;
+    }
+    .notes-header button {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #444;
+    }
+    .notes-list {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 0.5rem;
+    }
+    .note-item {
+      border-bottom: 1px solid #eee;
+      padding: 0.6rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .note-date {
+      font-size: 0.8rem;
+      color: #666;
+      margin-right: 0.6rem;
+    }
+    .note-text {
+      flex: 1;
+      margin-right: 0.6rem;
+      color: #333;
+    }
+    .notes-add {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .notes-add textarea {
+      flex: 1;
+      resize: vertical;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      min-height: 60px;
+      font-size: 0.9rem;
+    }
+    .notes-add button {
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .notes-container input[type="text"],
+    .notes-container input[type="email"] {
+      border: 1px solid #ccc;
+      border-radius: 0.4rem;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    /* CALCULATRICE FINANCIÈRE */
+    .calc-header {
+      font-size: 2rem;
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: 0.7px;
+      margin-bottom: 0.4rem;
+      text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    .calc-subheader {
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 16px;
+      font-weight: 400;
+      text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.3);
+      letter-spacing: 0.3px;
+      text-align: center;
+    }
+    .section-title-blue {
+      background: #d8eaff;
+      color: #085394;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.96rem;
+      font-weight: bold;
+      text-align: center;
+      max-width: 360px;
+      margin: 0 auto 16px auto;
+      border: 2px solid #bcd2ed;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(0.5px);
+    }
+    .container, .container-compare {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 28px;
+      max-width: 900px;
+      margin: 8px auto 0 auto;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+    .calculator {
+      background: rgba(255, 255, 255, 0.97);
+      border-radius: 12px;
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.13);
+      padding: 20px 16px 16px 16px;
+      flex: 1 1 260px;
+      min-width: 260px;
+      max-width: 360px;
+      width: 100%;
+      margin-bottom: 24px;
+      backdrop-filter: blur(1px);
+      box-sizing: border-box;
+    }
+    .calc-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 4px;
+      text-align: center;
+      color: #d70019;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9);
+    }
+    .calc-subtitle {
+      font-size: 0.98rem;
+      font-weight: 500;
+      color: #085394;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .input-group {
+      margin-bottom: 10px;
+    }
+    label.calc-label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: #1A2127;
+      font-size: 0.9rem;
+    }
+    input[type="number"], input[type="date"] {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      margin-bottom: 2px;
+      background: #fff;
+      color: #000;
+    }
+    input[type="number"]:focus, input[type="date"]:focus {
+      border-color: #D70019;
+      outline: none;
+    }
+    .total-result {
+      margin: 14px 0 6px 0;
+      background: #D70019;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border-radius: 6px;
+      padding: 8px 0;
+      text-align: center;
+      letter-spacing: 0.8px;
+      box-shadow: 0 2px 6px rgba(215, 0, 0, 0.4);
+    }
+    .explanation {
+      font-size: 0.85rem;
+      background: #D8EAFF;
+      color: #085394;
+      border-radius: 6px;
+      padding: 6px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(188, 210, 237, 0.2);
+    }
+    .diff-box, .compare-diff-per-two-weeks {
+      background: #C5EFD6;
+      color: #16672B;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(22, 103, 43, 0.2);
+      padding: 10px 10px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      text-align: center;
+      max-width: 320px;
+      margin: 20px auto 0 auto;
+      border: 2px solid #97D2A1;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(0.5px);
+    }
+    .diff-box {
+      margin-top: 20px;
+      margin-bottom: 28px;
+      font-size: 1rem;
+    }
+    @media (max-width: 900px) {
+      .container, .container-compare {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .diff-box, .compare-diff-per-two-weeks {
+        font-size: 0.9rem;
+      }
+      .calculator {
+        min-width: 92vw;
+        max-width: 92vw;
+      }
+    }
+
+    /* === OUTIL VISUEL GARANTIE === */
+    .main-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: center;
+    }
+    .main-title {
+      font-size: 2.8rem;
+      color: #fff;
+      font-weight: 900;
+      margin-top: 28px;
+      margin-bottom: 32px;
+      letter-spacing: 2px;
+      text-shadow: 0 4px 20px rgba(80, 3, 8, 0.47),
+                   0 1px 8px rgba(255, 255, 255, 0.45);
+      text-align: center;
+      backdrop-filter: blur(0.5px);
+    }
+    .container-main {
+      display: flex;
+      gap: 48px;
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 32px;
+      padding: 36px 32px;
+      box-shadow: 0 10px 60px rgba(131, 1, 12, 0.19);
+      align-items: flex-start;
+      margin-bottom: 48px;
+      backdrop-filter: blur(12px) brightness(1.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+    }
+    .form-side {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      min-width: 320px;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+    .form-side label {
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 1.1rem;
+      letter-spacing: 0.4px;
+      text-shadow: 0 1px 4px rgba(200, 1, 14, 0.4);
+    }
+    .form-side input {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #fff;
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.22s, border-color 0.22s;
+      color: #000;
+    }
+    .form-side input:focus {
+      outline: none;
+      box-shadow: 0 0 8px #e00, 0 1px 7px rgba(200, 1, 14, 0.33);
+      border: 2px solid #d70019;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .onglet-section {
+      background: rgba(255, 255, 255, 0.23);
+      border-radius: 12px;
+      padding: 12px 14px 6px 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 8px rgba(167, 0, 26, 0.13);
+    }
+    .onglet-title {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 5px;
+      letter-spacing: 0.2px;
+      text-shadow: 0 1px 4px rgba(200, 1, 14, 0.4);
+    }
+    .graph-section {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px;
+      box-shadow: 0 4px 36px rgba(112, 0, 28, 0.18);
+      padding: 34px 26px 26px 26px;
+      position: relative;
+      font-size: 1.24rem;
+      color: #000;
+      min-width: 880px;
+    }
+    .graph-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #b4001a;
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 8px rgba(231, 231, 231, 0.47);
+    }
+    .graph-title svg {
+      width: 26px;
+      height: 26px;
+      opacity: 0.83;
+    }
+    .badge-constructeur {
+      position: absolute;
+      top: 56px;
+      left: 150px;
+      background: #00649c;
+      color: #fff;
+      font-weight: bold;
+      font-size: 0.96rem;
+      border-radius: 12px 0 12px 0;
+      padding: 8px 18px 6px 14px;
+      box-shadow: 0 4px 15px rgba(0, 121, 197, 0.17),
+                  0 1px 6px rgba(0, 0, 0, 0.1);
+      letter-spacing: 1.3px;
+      z-index: 10;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+    }
+    .badge-constructeur svg {
+      width: 14px;
+      height: 14px;
+      vertical-align: middle;
+    }
+    .legend {
+      margin-top: 16px;
+      font-size: 1.05rem;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      border-radius: 8px;
+      background: rgba(240, 240, 240, 0.70);
+      box-shadow: 0 1px 8px rgba(170, 170, 170, 0.13);
+      padding: 6px 12px;
+      margin-bottom: 0;
+    }
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .legend-box {
+      width: 28px;
+      height: 18px;
+      border-radius: 4px;
+      display: inline-block;
+      border: 2px solid #BBB;
+    }
+    .legend-base      { background: #A3D8F4; border-color: #5A99B6; }
+    .legend-hachure  { background: repeating-linear-gradient(135deg, #FFB0B0, #FFB0B0 8px, #FFF 8px, #FFF 16px); }
+    .legend-proj-hach { background: repeating-linear-gradient(45deg, #00B245, #00B245 4px, #FFF 4px, #FFF 9px); }
+    .legend-proj     { background: #A8E6B6; border-color: #54BB7C; }
+    .legend-current  {
+      background: #C8102E;
+      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+      border: 2px solid #FFF;
+    }
+    .btn-export {
+      display: inline-block;
+      background: #00649c;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0, 100, 156, 0.21);
+      margin: 14px auto 0 auto;
+      cursor: pointer;
+      transition: background 0.22s, transform 0.22s;
+    }
+    .btn-export:hover {
+      background: #0094f0;
+      transform: scale(1.05);
+    }
+    @media (max-width: 1500px) {
+      .graph-area {
+        width: 92vw;
+        max-width: 900px;
+      }
+      .graph-section {
+        min-width: 300px;
+      }
+    }
+    .years-labels {
+      display: none !important;
+    }
+
+    /* === FEUILLE DE LIVRAISON === */
+    :root {
+      --main-red: #dc2626;
+      --box-red-pale: #ffeaea;
+      --glass-bg: #fff;
+      --glass-border: #f4e5f5;
+      --cat-red: #ffeaea;
+      --cat-red-dark: #8B1F1F;
+      --table-head-red: #f8eaea;
+      --text-main: #222c38;
+      --note-bg: #fdf5f5;
+      --accent: #f4a2a2;
+      --accent2: #e05b5b;
+    }
+    .content-livraison {
+      position: relative;
+      z-index: 2;
+      width: 100vw;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 30px;
+      background: transparent;
+      box-sizing: border-box;
+    }
+    .title-box {
+      margin-top: 32px;
+      margin-bottom: 16px;
+      background: var(--box-red-pale);
+      color: #8B1F1F;
+      font-size: 2rem;
+      font-weight: 800;
+      padding: 14px 40px;
+      border-radius: 15px;
+      box-shadow: 0 2px 8px rgba(234, 234, 234, 0.6);
+      letter-spacing: 0.03em;
+      text-align: center;
+      border: 2px solid #f5c4c4;
+      text-shadow: 0 2px 8px #fffafaff;
+      display: inline-block;
+    }
+    .glass-card {
+      margin: 24px 0 0 0;
+      background: var(--glass-bg);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px 0 rgba(229, 231, 235, 0.14);
+      border: 2px solid var(--glass-border);
+      width: 1040px;
+      max-width: 94vw;
+      padding: 18px 22px 12px 22px;
+      position: relative;
+      transition: box-shadow 0.17s;
+      box-sizing: border-box;
+    }
+    .cat-title-wrap {
+      margin-bottom: 12px;
+    }
+    .cat-title {
+      display: inline-flex;
+      align-items: center;
+      background: var(--cat-red);
+      color: var(--cat-red-dark);
+      font-weight: 900;
+      font-size: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 7px rgba(255, 237, 237, 0.7);
+      padding: 6px 16px 6px 10px;
+      letter-spacing: 0.01em;
+      border: 1.2px solid #f5c4c4;
+      gap: 7px;
+      min-width: 160px;
+    }
+    .cat-title i {
+      font-size: 1.05em;
+      color: var(--cat-red-dark);
+      filter: drop-shadow(0 2px 2px #fff);
+      margin-right: 4px;
+    }
+    table.livraison-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: transparent;
+      font-size: 1rem;
+    }
+    th.livraison-th, td.livraison-td {
+      padding: 6px 4px;
+      vertical-align: middle;
+      border-bottom: 1px solid #E7E5E4;
+    }
+    th.livraison-th {
+      color: #7B2A2A;
+      font-weight: 800;
+      font-size: 1rem;
+      background: var(--table-head-red);
+      text-align: left;
+      border-radius: 4px 4px 0 0;
+    }
+    td.livraison-td {
+      background: none;
+      font-size: 0.96rem;
+    }
+    .check-col {
+      text-align: center;
+      width: 32px;
+    }
+    .note-col {
+      width: 52%;
+      min-width: 240px;
+      padding-right: 0;
+    }
+    .note-field {
+      width: 98%;
+      min-height: 50px;
+      border: 2px solid #F5C4C4;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 1rem;
+      background: var(--note-bg);
+      box-shadow: 0 1px 8px rgba(234, 239, 239, 0.6);
+      transition: border 0.22s, box-shadow 0.2s;
+      margin-bottom: 1px;
+      resize: vertical;
+      color: #000;
+    }
+    .note-field:focus {
+      border-color: var(--accent2);
+      outline: none;
+      box-shadow: 0 2px 10px rgba(176, 43, 43, 0.3);
+    }
+    .checkbox {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent2);
+      border: 1px solid var(--accent2);
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+      margin: 0 4px;
+      vertical-align: middle;
+      box-shadow: 0 1px 2px #eee;
+      transition: box-shadow 0.2s, border 0.2s;
+    }
+    .checkbox:focus {
+      box-shadow: 0 0 0 2px rgba(176, 43, 43, 0.3);
+    }
+    .fa-car-side, .fa-soap, .fa-shield-halved, .fa-hand-holding-heart {
+      filter: drop-shadow(0 2px 2px #fff);
+    }
+    .print-btn {
+      margin: 18px auto 8px auto;
+      background: linear-gradient(90deg, #B91C1C 60%, #E05B5B 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 8px 24px;
+      box-shadow: 0 4px 16px rgba(176, 43, 43, 0.4);
+      cursor: pointer;
+      transition: background 0.19s;
+      z-index: 4;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: center;
+    }
+    .print-btn:hover {
+      background: linear-gradient(90deg, #E05B5B 10%, #B91C1C 80%);
+    }
+    @media (max-width: 1200px) {
+      .glass-card {
+        width: 99vw;
+        padding: 2vw 1vw;
+      }
+      .cat-title {
+        min-width: 80px;
+        font-size: 0.95rem;
+        padding: 6px 8px;
+      }
+      .title-box {
+        font-size: 1.15rem;
+        padding: 7px 3vw;
+      }
+      .note-col {
+        min-width: 80px;
+      }
+      .note-field {
+        font-size: 0.94rem;
+        min-height: 36px;
+      }
+    }
+    @media (max-width: 900px) {
+      .note-col {
+        width: 40vw;
+        min-width: 36vw;
+      }
+      .note-field {
+        font-size: 0.94rem;
+        min-height: 36px;
+      }
+    }
+    @media (max-width: 700px) {
+      .glass-card {
+        width: 99vw;
+        padding: 1vw 0.5vw;
+      }
+      .title-box {
+        font-size: 0.9rem;
+        padding: 5px 1vw;
+      }
+      .cat-title {
+        font-size: 0.8rem;
+      }
+      .note-col {
+        width: 26vw;
+        min-width: 36vw;
+      }
+      .note-field {
+        font-size: 0.94rem;
+        min-height: 36px;
+      }
+    }
+
+    /* === CSS D’IMPRESSION (A4/Letter) === */
+    @media print {
+      @page {
+        size: letter;
+        margin: 0.5cm;
+      }
+      html, body {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 0;
+      }
+      .content-livraison {
+        transform: scale(0.85);
+        transform-origin: top left;
+      }
+      .glass-card {
+        width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0;
+        padding: 6px !important;
+      }
+      .cat-title {
+        font-size: 0.85rem !important;
+      }
+      .title-box {
+        font-size: 1.4rem !important;
+        padding: 6px 20px !important;
+      }
+      table.livraison-table {
+        font-size: 0.8rem !important;
+      }
+      .note-field, .checkbox {
+        transform: scale(0.9);
+      }
+      .print-btn {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center relative overflow-x-hidden">
+
+  <!-- Fond d’écran + calque rouge -->
+  <div class="bg-car-visible"></div>
+  <div class="bg-red-overlay"></div>
+
+  <!-- En-tête / Logo -->
+  <header class="w-full flex flex-col items-center py-7" style="z-index: 21;">
+    <span class="crm-logo-text tracking-widest select-none">CRM</span>
+  </header>
+
+  <!-- Barre de Navigation -->
+  <nav
+    class="w-full max-w-[98vw] flex flex-wrap justify-center mb-2 relative z-20"
+  >
+    <div class="flex flex-wrap justify-center">
+      <button class="nav-tab" id="tab-accueil-btn">Accueil</button>
+      <button class="nav-tab" id="tab-performance-btn">
+        Suivi performance mensuelle
+      </button>
+      <button class="nav-tab" id="tab-visite-btn">
+        Visite concessionnaire
+      </button>
+      <button class="nav-tab" id="tab-calc-btn">Calculatrice financière</button>
+      <button class="nav-tab" id="tab-garantie-btn">Outil Visuel Garantie</button>
+      <button class="nav-tab" id="tab-livraison-btn">Feuille de livraison</button>
+      <button class="nav-tab" id="logout-btn">Se déconnecter</button>
+    </div>
+  </nav>
+
+  <main class="w-full flex-1 flex flex-col gap-4 px-1 md:px-8 mb-10 relative z-10">
+
+    <!-- ==================== Onglet Accueil ==================== -->
+    <section id="tab-accueil" class="crm-card mt-2 shadow-2xl">
+      <div class="flex flex-col items-center py-8">
+        <h2 class="text-4xl font-bold text-red-700 mb-3 tracking-wider">
+          Bienvenue dans votre CRM
+        </h2>
+        <p
+          class="text-lg text-gray-700 text-center max-w-2xl mb-6"
+        >
+          Gérez, analysez et suivez vos concessionnaires : performances
+          mensuelles, visites, historiques, notes…<br />
+          <span class="font-semibold text-red-600"
+            >Tout est synchronisé et à jour !</span
+          >
+        </p>
+        <!-- Phrase agrandie ici -->
+        <div class="mt-8">
+          <span
+            class="text-2xl italic text-gray-600 border-l-4 border-red-400 pl-4"
+          >
+            “On ne sauve pas des vies, on vend des Garanties.”
+          </span>
+        </div>
+        <div class="text-gray-500 text-sm mt-6">
+          &copy; <span id="footer-year">2025</span> – Avantage Plus
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================== Onglet Suivi performance mensuelle =========================================== -->
+    <section
+      id="tab-performance"
+      class="crm-card p-4 mt-2 shadow-2xl hidden"
+    >
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2"
+      >
+        <input
+          id="search-performance"
+          type="text"
+          placeholder="Rechercher un concessionnaire…"
+          class="max-w-sm px-4 py-2 rounded-xl border border-gray-300 shadow focus:outline-none focus:border-red-600 text-lg"
+        />
+        <div class="flex gap-2">
+          <button
+            class="bg-green-600 text-white px-4 py-2 rounded-xl shadow hover:bg-green-700 font-semibold"
+            id="btn-add-row"
+          >
+            + Ajouter
+          </button>
+          <button
+            class="bg-indigo-600 text-white px-4 py-2 rounded-xl shadow hover:bg-indigo-700 font-semibold"
+            id="btn-new-year"
+          >
+            Nouvelle année
+          </button>
+          <button
+            class="bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700 font-semibold"
+            id="btn-import"
+          >
+            Importer Excel/CSV
+          </button>
+          <button
+            class="bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700 font-semibold"
+            id="btn-export-excel"
+          >
+            Exporter Excel/CSV
+          </button>
+        </div>
+      </div>
+      <input
+        type="file"
+        id="file-input"
+        accept=".xlsx,.xls,.csv"
+        class="hidden"
+      />
+      <div id="performance-table-container" class="crm-table-scroll"></div>
+    </section>
+
+    <!-- ========================= Onglet Visite concessionnaire ========================= -->
+    <section id="tab-visite" class="crm-card p-4 mt-2 hidden shadow-2xl">
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2"
+      >
+        <input
+          id="search-visite"
+          type="text"
+          placeholder="Rechercher un concessionnaire…"
+          class="max-w-sm px-4 py-2 rounded-xl border border-gray-300 shadow focus:outline-none focus:border-red-600 text-lg"
+        />
+      </div>
+      <div id="visite-table-container" class="crm-table-scroll"></div>
+    </section>
+
+    <!-- =========================================== Onglet Calculatrice financière =========================================== -->
+    <section id="tab-calc" class="crm-card p-4 mt-2 hidden shadow-2xl">
+      <div class="calc-header">Calculatrices financières</div>
+      <div class="calc-subheader">Outil professionnel pour concessionnaires automobiles</div>
+
+      <div class="section-title-blue">Comptant VS financement</div>
+      <div class="container mt-2">
+        <!-- Intérêt composé -->
+        <div class="calculator">
+          <div class="calc-title">Intérêt composé</div>
+          <div class="calc-subtitle">Revenu de placement</div>
+          <div class="input-group">
+            <label for="comp-montant" class="calc-label">Montant initial ($)</label>
+            <input
+              type="number"
+              id="comp-montant"
+              value="30000"
+              min="0"
+              step="0.01"
+              tabindex="1"
+            />
+          </div>
+          <div class="input-group">
+            <label for="comp-taux" class="calc-label"
+              >Taux d’intérêt annuel (%)</label
+            >
+            <input
+              type="number"
+              id="comp-taux"
+              value="8"
+              min="0"
+              step="0.01"
+              tabindex="2"
+            />
+          </div>
+          <div class="input-group">
+            <label for="comp-annees" class="calc-label">Terme (années)</label>
+            <input
+              type="number"
+              id="comp-annees"
+              value="7"
+              min="1"
+              step="1"
+              tabindex="3"
+            />
+          </div>
+          <div class="total-result" id="comp-total">0 $</div>
+          <div class="explanation">
+            Calcule le gain total d’intérêts composés annuellement.
+          </div>
+        </div>
+        <!-- Coût d’emprunt -->
+        <div class="calculator">
+          <div class="calc-title">Coût d’emprunt</div>
+          <div class="calc-subtitle">Intérêt payé</div>
+          <div class="input-group">
+            <label for="emp-montant" class="calc-label"
+              >Montant emprunté ($)</label
+            >
+            <input
+              type="number"
+              id="emp-montant"
+              value="30000"
+              min="0"
+              step="0.01"
+              tabindex="4"
+            />
+          </div>
+          <div class="input-group">
+            <label for="emp-taux" class="calc-label"
+              >Taux d’intérêt annuel (%)</label
+            >
+            <input
+              type="number"
+              id="emp-taux"
+              value="8"
+              min="0"
+              step="0.01"
+              tabindex="5"
+            />
+          </div>
+          <div class="input-group">
+            <label for="emp-annees" class="calc-label">Durée (années)</label>
+            <input
+              type="number"
+              id="emp-annees"
+              value="7"
+              min="1"
+              step="1"
+              tabindex="6"
+            />
+          </div>
+          <div class="total-result" id="emp-total">0 $</div>
+          <div class="explanation">
+            Calcule le coût total des intérêts payés sur l’emprunt (amortissement
+            classique).
+          </div>
+        </div>
+      </div>
+
+      <div class="diff-box" id="diff-box">
+        Différence entre les deux options : 0 $
+      </div>
+
+      <div class="section-title-blue">Marge de crédit VS Prêt conventionnel</div>
+      <div class="container-compare mt-2">
+        <!-- Marge de crédit -->
+        <div class="calculator">
+          <div class="calc-title">Calcul intérêt sur Marge de crédit</div>
+          <div class="input-group">
+            <label for="marge-montant" class="calc-label">Montant ($)</label>
+            <input
+              type="number"
+              id="marge-montant"
+              value="30000"
+              min="0"
+              step="0.01"
+              tabindex="7"
+            />
+          </div>
+          <div class="input-group">
+            <label for="marge-taux" class="calc-label">Taux annuel (%)</label>
+            <input
+              type="number"
+              id="marge-taux"
+              value="5"
+              min="0"
+              step="0.01"
+              tabindex="8"
+            />
+          </div>
+          <div class="input-group">
+            <label for="marge-annees" class="calc-label">Terme (années)</label>
+            <input
+              type="number"
+              id="marge-annees"
+              value="7"
+              min="1"
+              step="1"
+              tabindex="9"
+            />
+          </div>
+          <div class="total-result" id="marge-total">0 $</div>
+          <div class="explanation">
+            Intérêt total à payer sur la marge de crédit (amortissement mensuel fixe).
+          </div>
+        </div>
+        <!-- Prêt automobile -->
+        <div class="calculator">
+          <div class="calc-title">Calcul intérêt sur Prêt automobile</div>
+          <div class="input-group">
+            <label for="pret-montant" class="calc-label">Montant ($)</label>
+            <input
+              type="number"
+              id="pret-montant"
+              value="30000"
+              min="0"
+              step="0.01"
+              tabindex="10"
+            />
+          </div>
+          <div class="input-group">
+            <label for="pret-taux" class="calc-label">Taux annuel (%)</label>
+            <input
+              type="number"
+              id="pret-taux"
+              value="8"
+              min="0"
+              step="0.01"
+              tabindex="11"
+            />
+          </div>
+          <div class="input-group">
+            <label for="pret-annees" class="calc-label">Terme (années)</label>
+            <input
+              type="number"
+              id="pret-annees"
+              value="7"
+              min="1"
+              step="1"
+              tabindex="12"
+            />
+          </div>
+          <div class="total-result" id="pret-total">0 $</div>
+          <div class="explanation">
+            Intérêt total à payer sur le prêt automobile (amortissement mensuel fixe).
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-diff-per-two-weeks" id="compare-diff-per-two-weeks">
+        Différence aux deux semaines : 0 $
+      </div>
+
+      <div class="disclaimer text-center mt-6 px-4">
+        <p class="text-gray-800 text-sm italic">
+          Les résultats affichés sont des estimations à titre indicatif seulement.
+          Malgré le soin apporté, des écarts ou erreurs peuvent subsister selon les
+          situations réelles. Validez toujours avec votre conseiller financier.
+        </p>
+      </div>
+    </section>
+
+    <!-- =========================================== Onglet Outil Visuel Garantie =========================================== -->
+    <section
+      id="tab-garantie"
+      class="hidden p-0 shadow-2xl"
+      style="background: transparent; box-shadow: none;"
+    >
+      <div class="main-content">
+        <div class="main-title">Garantie Manufacturière VS Années Projeté</div>
+        <div class="container-main">
+          <!-- Formulaire à gauche -->
+          <form class="form-side" onsubmit="return false">
+            <div class="form-group">
+              <label for="date-mise-en-service">Date de mise en service</label>
+              <input type="date" id="date-mise-en-service" value="2023-01-01" required />
+            </div>
+            <div class="onglet-section">
+              <div class="onglet-title">État actuel</div>
+              <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex flex-col">
+                  <label for="date-aujourd’hui">Date d’aujourd’hui</label>
+                  <input type="date" id="date-aujourd’hui" required />
+                </div>
+                <div class="flex flex-col">
+                  <label for="km-aujourd’hui">Kilométrage aujourd’hui</label>
+                  <input
+                    type="number"
+                    id="km-aujourd’hui"
+                    min="0"
+                    max="260000"
+                    step="1000"
+                    value="0"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="annees-projetees">Combien d’années vous comptez garder la voiture</label>
+              <input
+                type="number"
+                id="annees-projetees"
+                min="0"
+                max="15"
+                value="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="km-par-an">Km par année</label>
+              <input
+                type="number"
+                id="km-par-an"
+                min="0"
+                max="70000"
+                step="100"
+                value="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Total km projetés</label>
+              <input
+                type="number"
+                id="km-projeté"
+                readonly
+                style="background: #EAF8EA; color: #076A15; font-weight: bold;"
+              />
+            </div>
+          </form>
+          <!-- Graphique à droite -->
+          <div class="graph-section">
+            <div class="graph-title">
+              <svg fill="none" viewBox="0 0 32 32">
+                <rect x="4" y="15" width="24" height="5" rx="2.5" fill="#B4001A" />
+                <rect x="7" y="10" width="18" height="7" rx="2" fill="#555" />
+                <rect x="10" y="7" width="12" height="5" rx="2" fill="#C8102E" />
+              </svg>
+              Projection de couverture
+            </div>
+            <div class="badge-constructeur">
+              <svg viewBox="0 0 22 22" fill="none">
+                <circle cx="11" cy="11" r="10" stroke="#fff" stroke-width="2" />
+                <path
+                  d="M6 13l3-4 3 4 3-6"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Garantie constructeur
+            </div>
+            <div class="graph-area" style="position: relative;">
+              <canvas id="canvas-graph" width="900" height="540"></canvas>
+              <div id="years-labels" class="years-labels"></div>
+            </div>
+            <div class="legend">
+              <span
+                ><span class="legend-box legend-base"></span> Garantie de base (3 ans /
+                60 000 km)</span
+              >
+              <span
+                ><span class="legend-box legend-hachure"></span> Garantie déjà
+                consommée</span
+              >
+              <span
+                ><span class="legend-box legend-proj-hach"></span> Couverture
+                projetée (sous garantie)</span
+              >
+              <span
+                ><span class="legend-box legend-proj"></span> Couverture
+                projetée (hors garantie)</span
+              >
+              <span
+                ><span class="legend-current"></span> Position actuelle</span
+              >
+            </div>
+            <button class="btn-export" id="btn-export-garantie">
+              Exporter le graphique en PNG
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================== Onglet Feuille de livraison =========================================== -->
+    <section id="tab-livraison" class="crm-card mt-2 shadow-2xl hidden">
+      <div class="content-livraison">
+        <div class="title-box">Offre de services et préparation véhicule</div>
+        <form>
+          <!-- Extension de garantie -->
+          <div class="glass-card">
+            <div class="cat-title-wrap">
+              <div class="cat-title">
+                <i class="fa-solid fa-car-side"></i> Extension de garantie
+              </div>
+            </div>
+            <table class="livraison-table">
+              <tr>
+                <th class="livraison-th">Produit / Option</th>
+                <th class="livraison-th check-col">Oui</th>
+                <th class="livraison-th check-col">Non</th>
+                <th class="livraison-th note-col">Notes</th>
+              </tr>
+              <tr>
+                <td class="livraison-td">
+                  Extension de garantie couverture complète
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="garantie_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="garantie_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Préparation esthétique -->
+          <div class="glass-card mt-6">
+            <div class="cat-title-wrap">
+              <div class="cat-title">
+                <i class="fa-solid fa-soap"></i> Préparation esthétique du véhicule
+              </div>
+            </div>
+            <table class="livraison-table">
+              <tr>
+                <th class="livraison-th">Produit / Option</th>
+                <th class="livraison-th check-col">Oui</th>
+                <th class="livraison-th check-col">Non</th>
+                <th class="livraison-th note-col">Notes</th>
+              </tr>
+              <tr>
+                <td class="livraison-td">Antirouille</td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="antirouille_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="antirouille_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="livraison-td">Pierre de capot</td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="capot_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="capot_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="livraison-td">Scellant à peinture</td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="scellant_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="scellant_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="livraison-td">Système antivol</td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="antivol_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="antivol_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Assurance crédit -->
+          <div class="glass-card mt-6">
+            <div class="cat-title-wrap">
+              <div class="cat-title">
+                <i class="fa-solid fa-shield-halved"></i> Assurance crédit
+              </div>
+            </div>
+            <table class="livraison-table">
+              <tr>
+                <th class="livraison-th">Produit / Option</th>
+                <th class="livraison-th check-col">Oui</th>
+                <th class="livraison-th check-col">Non</th>
+                <th class="livraison-th note-col">Notes</th>
+              </tr>
+              <tr>
+                <td class="livraison-td">Assurance-vie</td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="vie_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="vie_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="livraison-td">Assurance invalidité</td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="invalidite_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="invalidite_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td class="livraison-td">Assurance maladie grave</td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="maladie_oui" />
+                </td>
+                <td class="livraison-td check-col">
+                  <input type="checkbox" class="checkbox" name="maladie_non" />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Assurance de remplacement -->
+          <div class="glass-card mt-6">
+            <div class="cat-title-wrap">
+              <div class="cat-title">
+                <i class="fa-solid fa-hand-holding-heart"></i> Assurance de
+                remplacement
+              </div>
+            </div>
+            <table class="livraison-table">
+              <tr>
+                <th class="livraison-th">Produit / Option</th>
+                <th class="livraison-th check-col">Oui</th>
+                <th class="livraison-th check-col">Non</th>
+                <th class="livraison-th note-col">Notes</th>
+              </tr>
+              <tr>
+                <td class="livraison-td">Assurance de remplacement</td>
+                <td class="livraison-td check-col">
+                  <input
+                    type="checkbox"
+                    class="checkbox"
+                    name="remplacement_oui"
+                  />
+                </td>
+                <td class="livraison-td check-col">
+                  <input
+                    type="checkbox"
+                    class="checkbox"
+                    name="remplacement_non"
+                  />
+                </td>
+                <td class="livraison-td note-col">
+                  <textarea class="note-field"></textarea>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- Bouton Imprimer -->
+          <button
+            type="button"
+            class="print-btn mt-6"
+            onclick="window.print()"
+          >
+            <i class="fa-solid fa-print"></i> Imprimer / Télécharger
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= Popup “Notes” ================= -->
+  <div id="notes-overlay" class="notes-overlay" onclick="closeNotes()">
+    <div class="notes-container" onclick="event.stopPropagation()">
+      <div class="notes-header">
+        <h3 id="notes-title">Notes</h3>
+        <button onclick="closeNotes()">✕</button>
+      </div>
+      <div id="notes-list" class="notes-list"></div>
+      <div class="notes-add">
+        <textarea id="notes-input" placeholder="Écrire une note…"></textarea>
+        <button id="btn-add-note">Ajouter</button>
+      </div>
+      <button
+        id="btn-export-notes"
+        class="bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700 font-semibold self-end text-sm mt-2"
+      >
+        Exporter les notes (Word)
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= Popup “Infos Concessionnaire” ================= -->
+  <div id="info-overlay" class="notes-overlay" onclick="closeNotes()">
+    <div class="notes-container" onclick="event.stopPropagation()">
+      <div class="notes-header">
+        <h3 id="info-title">Infos Concessionnaire</h3>
+        <button onclick="closeNotes()">✕</button>
+      </div>
+      <div class="notes-list" style="flex-direction: column; gap: 0.6rem">
+        <!-- Propriétaire : Nom + E-mail -->
+        <div class="flex flex-col gap-2">
+          <label class="font-semibold">Propriétaire :</label>
+          <input
+            type="text"
+            id="info-owner"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Nom du propriétaire"
+          />
+          <input
+            type="email"
+            id="info-owner-email"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Adresse e-mail du propriétaire"
+            onclick="navigateToGmail('info-owner-email')"
+            title="Cliquez pour envoyer un e-mail"
+          />
+        </div>
+        <!-- Comptabilité : Nom + E-mail -->
+        <div class="flex flex-col gap-2">
+          <label class="font-semibold">Comptabilité :</label>
+          <input
+            type="text"
+            id="info-accounts"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Nom du comptable"
+          />
+          <input
+            type="email"
+            id="info-accounts-email"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Adresse e-mail du comptable"
+            onclick="navigateToGmail('info-accounts-email')"
+            title="Cliquez pour envoyer un e-mail"
+          />
+        </div>
+        <!-- FNI -->
+        <div class="flex flex-col gap-2">
+          <label for="info-fni" class="font-semibold">Directeur Financier :</label>
+          <input
+            type="text"
+            id="info-fni"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Nom du Directeur Financier"
+          />
+        </div>
+        <!-- Dir. Service : Nom + E-mail -->
+        <div class="flex flex-col gap-2">
+          <label class="font-semibold">Dir. Service :</label>
+          <input
+            type="text"
+            id="info-dir"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Nom du directeur service"
+          />
+          <input
+            type="email"
+            id="info-dir-email"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Adresse e-mail du directeur service"
+            onclick="navigateToGmail('info-dir-email')"
+            title="Cliquez pour envoyer un e-mail"
+          />
+        </div>
+        <!-- Supplémentaires : Jusqu’à 3 Directeurs Financiers -->
+        <div class="flex flex-col gap-2">
+          <label for="info-fni-2" class="font-semibold">Directeur Financier (2) :</label>
+          <input
+            type="text"
+            id="info-fni-2"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Nom du Deuxième Directeur Financier"
+          />
+        </div>
+        <div class="flex flex-col gap-2">
+          <label for="info-fni-3" class="font-semibold">Directeur Financier (3) :</label>
+          <input
+            type="text"
+            id="info-fni-3"
+            class="border border-gray-300 rounded p-1 text-sm w-full"
+            placeholder="Nom du Troisième Directeur Financier"
+          />
+        </div>
+      </div>
+      <button
+        id="btn-save-info"
+        class="bg-green-600 text-white px-4 py-2 rounded-xl shadow hover:bg-green-700 font-semibold self-end text-sm mt-2"
+      >
+        Sauvegarder
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= Scripts JavaScript ================= -->
+  <script>
+    // === NAVIGATION DES ONGLETS ===
+    const tabs = [
+      { btn: 'tab-accueil-btn', tab: 'tab-accueil' },
+      { btn: 'tab-performance-btn', tab: 'tab-performance' },
+      { btn: 'tab-visite-btn', tab: 'tab-visite' },
+      { btn: 'tab-calc-btn', tab: 'tab-calc' },
+      { btn: 'tab-garantie-btn', tab: 'tab-garantie' },
+      { btn: 'tab-livraison-btn', tab: 'tab-livraison' }
+    ];
+
+    function switchTab(index) {
+      tabs.forEach((item, i) => {
+        document.getElementById(item.tab).classList.toggle('hidden', i !== index);
+        document.getElementById(item.btn).classList.toggle('nav-active', i === index);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Au besoin, déclencher des fonctions de rendu lors du changement de tab
+      if (index === 1) renderPerformance();
+      if (index === 2) renderVisite();
+      if (index === 4) drawGraph();
+    }
+
+    // Attacher les événements de clic après que le DOM est chargé
+    window.addEventListener('DOMContentLoaded', () => {
+      tabs.forEach((item, idx) => {
+        const btnEl = document.getElementById(item.btn);
+        if (btnEl) {
+          btnEl.addEventListener('click', () => switchTab(idx));
+        }
+      });
+
+      // Bouton de déconnexion : recharge la page et supprime “remember me”
+      document.getElementById('logout-btn')?.addEventListener('click', () => {
+        localStorage.removeItem('remember_me');
+        sessionStorage.removeItem('authenticated');
+        location.reload();
+      });
+
+      // Ouvrir sur l’onglet “Accueil” par défaut
+      switchTab(0);
+
+      // Initialiser année du footer
+      const y = new Date().getFullYear();
+      document.getElementById('footer-year').textContent = y;
+
+      // Initialiser les composants des onglets (performance, visite, calcul, garantie)
+      renderPerformance();
+      renderVisite();
+      initializeCalculatrice();
+      initializeGraphGarantie();
+
+      // Si “remember me” est présent dans localStorage, on authentifie directement
+      const remember = localStorage.getItem('remember_me');
+      if (remember === 'true') {
+        sessionStorage.setItem('authenticated', 'true');
+      }
+
+      // Si non-authentifié, rediriger vers une simple modale de login
+      if (sessionStorage.getItem('authenticated') !== 'true') {
+        showLoginModal();
+      }
+    });
+
+    // === LOGIN SIMPLE (mot de passe = admin12345) ===
+    function showLoginModal() {
+      // Crée une overlay modale
+      const overlay = document.createElement('div');
+      overlay.id = 'login-overlay';
+      overlay.style.position = 'fixed';
+      overlay.style.inset = '0';
+      overlay.style.background = 'rgba(0,0,0,0.7)';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.zIndex = '100';
+
+      overlay.innerHTML = `
+        <div style="background:white; padding:2rem; border-radius:0.5rem; max-width:320px; width:90%; text-align:center; box-shadow:0 4px 16px rgba(0,0,0,0.2);">
+          <h2 style="font-size:1.5rem; margin-bottom:1rem; color:#dc2626;">Connexion CRM</h2>
+          <input type="password" id="login-password" placeholder="Mot de passe" style="width:100%; padding:0.5rem; margin-bottom:1rem; border:1px solid #ccc; border-radius:0.25rem;" />
+          <div style="display:flex; align-items:center; justify-content:flex-start; margin-bottom:1rem;">
+            <input type="checkbox" id="remember-me" style="margin-right:0.5rem;" />
+            <label for="remember-me" style="font-size:0.9rem;">Se souvenir de moi</label>
+          </div>
+          <button id="login-submit" style="background:#dc2626; color:#fff; padding:0.5rem 1rem; border:none; border-radius:0.25rem; cursor:pointer; font-weight:bold;">Se connecter</button>
+          <div id="login-error" style="color:red; margin-top:1rem; font-size:0.9rem; display:none;">Mot de passe incorrect</div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      document.getElementById('login-submit').addEventListener('click', () => {
+        const pwd = document.getElementById('login-password').value;
+        const rem = document.getElementById('remember-me').checked;
+        if (pwd === 'admin12345') {
+          sessionStorage.setItem('authenticated', 'true');
+          if (rem) localStorage.setItem('remember_me', 'true');
+          document.getElementById('login-overlay').remove();
+        } else {
+          document.getElementById('login-error').style.display = 'block';
+        }
+      });
+    }
+
+    // === GESTION MULTI-ANNÉES & LOCALSTORAGE ===
+    function getCurrentYear() {
+      return new Date().getFullYear().toString();
+    }
+    function loadAllData() {
+      const raw = localStorage.getItem('crm_data');
+      return raw ? JSON.parse(raw) : {};
+    }
+    function saveAllData(obj) {
+      localStorage.setItem('crm_data', JSON.stringify(obj));
+    }
+    function loadDealers() {
+      const all = loadAllData();
+      const yr = getCurrentYear();
+      if (!all[yr]) {
+        all[yr] = [];
+        saveAllData(all);
+      }
+      return all[yr];
+    }
+    function saveDealers(arr) {
+      const all = loadAllData();
+      const yr = getCurrentYear();
+      all[yr] = arr;
+      saveAllData(all);
+    }
+    function createDealer() {
+      return {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+        name: '',
+        taux: '',
+        mois: Array(12).fill(''),
+        moyennePrevYear: '',
+        visits: [],
+        notes: [],
+        priority: '1',
+        info: {
+          proprietaire: '',
+          email_proprietaire: '',
+          comptabilite: '',
+          email_comptabilite: '',
+          fni: '',
+          dir_service: '',
+          email_dir_service: ''
+        }
+      };
+    }
+
+    // === UTILS CALCULS PERFORMANCE ===
+    function totalAnnual(arr) {
+      return (arr || []).reduce((sum, v) => {
+        if (v === '' || v === '-') return sum;
+        const n = parseFloat(v.toString().replace(/\s/g, ''));
+        return sum + (isNaN(n) ? 0 : n);
+      }, 0);
+    }
+    function averageMonthly(arr) {
+      const filtered = (arr || []).filter(v => {
+        if (!v) return false;
+        if (v === '') return false;
+        if (v === '-') return false;
+        const n = parseFloat(v.toString().replace(/\s/g, ''));
+        return !isNaN(n);
+      });
+      if (!filtered.length) return 0;
+      const sum = filtered.reduce((acc, v) => {
+        const n = parseFloat(v.toString().replace(/\s/g, ''));
+        return acc + (isNaN(n) ? 0 : n);
+      }, 0);
+      return sum / filtered.length;
+    }
+
+    // === RENDEZ-VOUS PERFORMANCE MENSUELLE ===
+    function renderPerformance() {
+      const currentYear = parseInt(getCurrentYear());
+      const prevYear = currentYear - 1;
+
+      let search = document.getElementById('search-performance').value.trim().toLowerCase();
+      let dealers = loadDealers().slice().sort((a, b) =>
+        (a.name || '').localeCompare(b.name || '')
+      );
+      if (search) {
+        dealers = dealers.filter(d =>
+          (d.name || '').toLowerCase().includes(search)
+        );
+      }
+
+      let html = `
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th style="min-width:32px">#</th>
+              <th style="min-width:48px">Info</th>
+              <th style="min-width:120px">Nom</th>
+              <th style="min-width:60px">Taux</th>
+              <th style="min-width:70px">Janv</th>
+              <th style="min-width:70px">Fév</th>
+              <th style="min-width:70px">Mars</th>
+              <th style="min-width:70px">Avr</th>
+              <th style="min-width:70px">Mai</th>
+              <th style="min-width:70px">Juin</th>
+              <th style="min-width:70px">Juil</th>
+              <th style="min-width:70px">Août</th>
+              <th style="min-width:70px">Sept</th>
+              <th style="min-width:70px">Oct</th>
+              <th style="min-width:70px">Nov</th>
+              <th style="min-width:70px">Déc</th>
+              <th style="min-width:84px">Total ${currentYear}</th>
+              <th style="min-width:84px">Moyenne ${currentYear}</th>
+              <th style="min-width:100px">Moyenne ${prevYear}</th>
+              <th style="min-width:102px">% Diff ${prevYear}–${currentYear}</th>
+              <th style="min-width:60px">Notes</th>
+              <th style="min-width:48px"></th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      let idx = 0;
+      dealers.forEach(d => {
+        idx++;
+        const moisArr = d.mois || [];
+        const totCurYear = Math.round(totalAnnual(moisArr));
+        const moyCurYearNum = Math.round(averageMonthly(moisArr));
+        const moyPrevYearNum = parseFloat(d.moyennePrevYear) || 0;
+        const moyPrevYear = Math.round(moyPrevYearNum);
+        let diffPct = '0.0';
+        if (moyPrevYearNum !== 0) {
+          diffPct = (
+            (moyCurYearNum - moyPrevYearNum) /
+            moyPrevYearNum *
+            100
+          ).toFixed(1);
+        }
+        const pctColor = parseFloat(diffPct) >= 0 ? 'chip-green' : 'chip-red';
+
+        const totFmt = totCurYear.toLocaleString('fr-FR');
+        const moyCurFmt = moyCurYearNum.toLocaleString('fr-FR');
+        const moyPrevFmt = moyPrevYear.toLocaleString('fr-FR');
+
+        html += `
+          <tr data-id="${d.id}" class="hover:bg-gray-50 transition-all">
+            <td>${idx}</td>
+            <td>
+              <button
+                onclick="openInfo('${d.id}')"
+                class="text-blue-600 hover:underline font-semibold text-sm"
+                tabindex="0"
+              >ℹ️</button>
+            </td>
+            <td>
+              <input
+                type="text"
+                value="${d.name || ''}"
+                class="border-b border-gray-300 focus:border-red-500 px-1 w-full bg-white text-center"
+                onchange="updateNameById('${d.id}', this.value)"
+                tabindex="1"
+              />
+            </td>
+            <td>
+              <div style="display:inline-flex;align-items:center;gap:0.2em;">
+                <input
+                  type="number"
+                  value="${d.taux || ''}"
+                  class="chip ${getClaimColor(d.taux)}"
+                  style="font-size:0.9rem; padding:4px 6px; width:50px; background-clip: padding-box;"
+                  onchange="updateTauxById('${d.id}', this.value)"
+                  tabindex="0"
+                />
+                <span class="font-bold text-gray-400">%</span>
+              </div>
+            </td>
+        `;
+
+        // Colonnes mois (12 colonnes)
+        for (let m = 0; m < 12; m++) {
+          let rawVal = moisArr[m] != null ? moisArr[m] : '';
+          let displayed = rawVal === 0 ? '0' : rawVal.toString();
+          html += `
+            <td>
+              <div style="display:inline-flex;align-items:center;gap:0.2em;">
+                <input
+                  type="text"
+                  class="border-b border-gray-300 focus:border-red-500 px-1 bg-white w-16 text-right"
+                  value="${displayed}"
+                  onchange="updateMonthValue('${d.id}', ${m}, this.value)"
+                  placeholder="-"
+                  tabindex="${2 + (m + (idx - 1) * 14)}"
+                />
+                <span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+              </div>
+            </td>
+          `;
+        }
+
+        // Total de l’année en cours (pastille bleue)
+        html += `
+          <td>
+            <span class="chip chip-blue">${totFmt}
+              <span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+            </span>
+          </td>
+        `;
+        // Moyenne de l’année en cours (pastille jaune)
+        html += `
+          <td>
+            <span class="chip chip-yellow">${moyCurFmt}
+              <span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+            </span>
+          </td>
+        `;
+        // Moyenne de l’année précédente (input)
+        html += `
+          <td>
+            <div style="display:inline-flex;align-items:center;gap:0.2em;">
+              <input
+                type="number"
+                value="${moyPrevYear || ''}"
+                class="border-b border-gray-300 focus:border-red-500 px-1 bg-white w-16 text-right"
+                onchange="updatePrevYearAverage('${d.id}', this.value)"
+                tabindex="${2 + 12 + (idx - 1) * 14}"
+              />
+              <span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+            </div>
+          </td>
+        `;
+        // % Diff (pastille)
+        html += `
+          <td>
+            <span class="chip ${pctColor}">
+              ${parseFloat(diffPct) >= 0 ? '+' : ''}${diffPct}%
+            </span>
+          </td>
+        `;
+        // Bouton Notes
+        html += `
+          <td>
+            <button
+              onclick="openNotes('${d.id}')"
+              class="text-blue-600 hover:underline font-semibold text-sm"
+              tabindex="0"
+            >📝</button>
+          </td>
+        `;
+        // Bouton Supprimer
+        html += `
+          <td>
+            <button
+              onclick="removeDealer('${d.id}')"
+              class="text-red-600 hover:underline font-bold text-xs"
+              tabindex="0"
+            >X</button>
+          </td>
+        `;
+        html += `</tr>`;
+      });
+
+      // Ligne Totaux / Moyennes globales
+      let totalsArray = Array(12).fill(0);
+      let sumMoyCur = 0, countMoyCur = 0;
+      let sumMoyPrev = 0, countMoyPrev = 0;
+
+      dealers.forEach(d => {
+        (d.mois || []).forEach((v, i) => {
+          if (v !== '' && v !== '-') {
+            const n = parseFloat(v.toString().replace(/\s/g, ''));
+            if (!isNaN(n)) totalsArray[i] += n;
+          }
+        });
+        const mCur = Math.round(averageMonthly(d.mois || []));
+        if (!isNaN(mCur)) {
+          sumMoyCur += mCur;
+          countMoyCur++;
+        }
+        const mPrev = Math.round(parseFloat(d.moyennePrevYear) || 0);
+        if (!isNaN(mPrev)) {
+          sumMoyPrev += mPrev;
+          countMoyPrev++;
+        }
+      });
+
+      const totalYearSum = totalsArray.reduce((a, b) => a + b, 0);
+      const avgCurYear = countMoyCur ? Math.round(sumMoyCur / countMoyCur) : 0;
+      const avgPrevYear = countMoyPrev ? Math.round(sumMoyPrev / countMoyPrev) : 0;
+      let diffPctGlobal = '0.0';
+      if (avgPrevYear !== 0) {
+        diffPctGlobal = (
+          (avgCurYear - avgPrevYear) /
+          avgPrevYear *
+          100
+        ).toFixed(1);
+      }
+      const pctColorGlobal =
+        parseFloat(diffPctGlobal) >= 0 ? 'chip-green' : 'chip-red';
+
+      const totalYearFmt = totalYearSum.toLocaleString('fr-FR');
+      const avgCurFmt = avgCurYear.toLocaleString('fr-FR');
+      const avgPrevFmt = avgPrevYear.toLocaleString('fr-FR');
+
+      const colTotalsHTML = totalsArray
+        .map(val => {
+          const f = val.toLocaleString('fr-FR');
+          return `
+          <td class="px-1 py-1 bg-gray-50">
+            <span class="chip chip-yellow">
+              ${f}<span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+            </span>
+          </td>`;
+        })
+        .join('');
+
+      const totalRow = `
+        <tr class="bg-gray-50 font-semibold">
+          <td colspan="3" class="text-right">Totaux / Moyennes :</td>
+          <td></td>
+          ${colTotalsHTML}
+          <td>
+            <span class="chip chip-blue">${totalYearFmt}
+              <span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+            </span>
+          </td>
+          <td>
+            <span class="chip chip-yellow">${avgCurFmt}
+              <span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+            </span>
+          </td>
+          <td>
+            <div style="display:inline-flex;align-items:center;gap:0.2em;">
+              ${avgPrevFmt}<span class="font-bold text-gray-400" style="font-size:0.85rem">$</span>
+            </div>
+          </td>
+          <td>
+            <span class="chip ${pctColorGlobal}">
+              ${parseFloat(diffPctGlobal) >= 0 ? '+' : ''}${diffPctGlobal}%
+            </span>
+          </td>
+          <td colspan="2"></td>
+        </tr>
+      `;
+      html += totalRow + '</tbody></table>';
+      document.getElementById('performance-table-container').innerHTML = html;
+    }
+
+    // === MISES À JOUR DES VALEURS (Onglet Performance) ===
+    function updateNameById(id, val) {
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d) d.name = val.trim();
+      saveDealers(arr);
+      renderPerformance();
+      renderVisite();
+    }
+    function updateTauxById(id, val) {
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d) d.taux = val !== '' ? +val : '';
+      saveDealers(arr);
+      renderPerformance();
+      renderVisite();
+    }
+    function updateMonthValue(id, monthIndex, rawValue) {
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (!d) return;
+      const v = rawValue.trim();
+      if (v === '-') {
+        d.mois[monthIndex] = '-';
+      } else {
+        const cleaned = v.replace(/\s/g, '');
+        const num = parseFloat(cleaned);
+        if (!isNaN(num) && num >= 0) {
+          d.mois[monthIndex] = Math.round(num).toString();
+        } else {
+          d.mois[monthIndex] = '';
+        }
+      }
+      saveDealers(arr);
+      renderPerformance();
+      renderVisite();
+    }
+    function updatePrevYearAverage(id, val) {
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d) {
+        const num = parseFloat(val);
+        d.moyennePrevYear = isNaN(num) ? '' : Math.round(num);
+      }
+      saveDealers(arr);
+      renderPerformance();
+      renderVisite();
+    }
+    function removeDealer(id) {
+      if (confirm('Supprimer ce concessionnaire ?')) {
+        let arr = loadDealers().filter(e => e.id !== id);
+        saveDealers(arr);
+        renderPerformance();
+        renderVisite();
+      }
+    }
+    document.getElementById('btn-add-row')?.addEventListener('click', () => {
+      const arr = loadDealers();
+      arr.push(createDealer());
+      saveDealers(arr);
+      renderPerformance();
+      renderVisite();
+    });
+    document.getElementById('btn-export-excel')?.addEventListener('click', () => {
+      exportToExcel();
+    });
+    document.getElementById('search-performance')?.addEventListener('input', renderPerformance);
+
+    // === NOUVELLE ANNÉE ===
+    document.getElementById('btn-new-year')?.addEventListener('click', () => {
+      if (
+        !confirm(
+          'Voulez-vous réellement démarrer une nouvelle année ? (tous les chiffres mensuels seront remis à zéro.)'
+        )
+      ) {
+        return;
+      }
+      const arr = loadDealers();
+      arr.forEach(d => {
+        d.mois = Array(12).fill('');
+        d.moyennePrevYear = '';
+      });
+      saveDealers(arr);
+      renderPerformance();
+      renderVisite();
+      alert('Nouvelle année démarrée : tous les champs mensuels sont remis à zéro.');
+    });
+
+    // === IMPORT EXCEL/CSV ===
+    document.getElementById('btn-import')?.addEventListener('click', () => {
+      document.getElementById('file-input')?.click();
+    });
+    document
+      .getElementById('file-input')
+      ?.addEventListener('change', handleFile, false);
+
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = evt.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const ws = workbook.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        parseImportedData(rows);
+      };
+      if (file.name.endsWith('.csv')) {
+        reader.readAsText(file);
+      } else {
+        reader.readAsBinaryString(file);
+      }
+    }
+
+    function parseImportedData(rows) {
+      if (rows.length < 2) {
+        alert('Fichier vide ou format incorrect.');
+        return;
+      }
+      const headers = rows[0].map(h => h.toString().trim().toLowerCase());
+      const colIndex = {};
+      headers.forEach((h, i) => (colIndex[h] = i));
+      if (!('nom' in colIndex) || !('taux' in colIndex)) {
+        alert('Le fichier doit contenir au moins les colonnes “Nom” et “Taux”.');
+        return;
+      }
+      const imported = [];
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row.length) continue;
+        const name = row[colIndex['nom']] || '';
+        if (!name.toString().trim()) continue;
+        const taux = row[colIndex['taux']] || '';
+        const moisArr = [];
+        ['janv','fév','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'].forEach((mois, idx) => {
+          if (mois in colIndex) {
+            const cell = row[colIndex[mois]] || '';
+            const str = cell.toString().trim();
+            if (str === '' || str === '-') {
+              moisArr[idx] = '';
+            } else {
+              const num = parseFloat(str.replace(/\s/g, ''));
+              moisArr[idx] = isNaN(num) ? '' : Math.round(num).toString();
+            }
+          } else {
+            moisArr[idx] = '';
+          }
+        });
+        let moyPrev = '';
+        if ('moyenne précédente' in colIndex) {
+          const val = row[colIndex['moyenne précédente']] || '';
+          const str = val.toString().trim();
+          const n = parseFloat(str);
+          moyPrev = isNaN(n) ? '' : Math.round(n);
+        }
+        let notesTxt = '';
+        if ('notes historique' in colIndex) {
+          notesTxt = row[colIndex['notes historique']] || '';
+        }
+        let notesArr = [];
+        if (notesTxt && typeof notesTxt === 'string') {
+          notesArr = notesTxt
+            .split(';')
+            .map(chunk => {
+              const parts = chunk.split('–');
+              if (parts.length >= 2) {
+                return {
+                  date: parts[0].trim(),
+                  text: parts.slice(1).join('–').trim()
+                };
+              }
+              return null;
+            })
+            .filter(x => x);
+        }
+        const dealer = createDealer();
+        dealer.name = name;
+        dealer.taux = taux;
+        dealer.mois = moisArr;
+        dealer.moyennePrevYear = moyPrev || '';
+        dealer.notes = notesArr;
+        imported.push(dealer);
+      }
+      if (!imported.length) {
+        alert('Aucun concessionnaire valide trouvé dans le fichier.');
+        return;
+      }
+      saveDealers(imported);
+      renderPerformance();
+      renderVisite();
+      alert(imported.length + ' concessionnaire(s) importé(s).');
+    }
+
+    function exportToExcel() {
+      const dealers = loadDealers();
+      const currentYear = parseInt(getCurrentYear());
+      const prevYear = currentYear - 1;
+
+      const header = ['#', 'Nom', 'Taux'];
+      ['Janv','Fév','Mars','Avr','Mai','Juin','Juil','Août','Sept','Oct','Nov','Déc'].forEach(m => header.push(m));
+      header.push(
+        `Total ${currentYear}`,
+        `Moyenne ${currentYear}`,
+        `Moyenne ${prevYear}`,
+        `% Diff ${prevYear}-${currentYear}`,
+        'Notes historique'
+      );
+
+      const ws_data = [header];
+      dealers.forEach((d, idx) => {
+        const row = [idx + 1, d.name, d.taux];
+        (d.mois || Array(12).fill('')).forEach(v => {
+          if (v === '' || v === '-') {
+            row.push('');
+          } else {
+            const n = parseFloat(v.toString().replace(/\s/g, ''));
+            row.push(isNaN(n) ? '' : Math.round(n));
+          }
+        });
+        const totCur = Math.round(totalAnnual(d.mois || []));
+        const moyCur = Math.round(averageMonthly(d.mois || []));
+        const moyPrev = Math.round(parseFloat(d.moyennePrevYear) || 0);
+        let diffPct = '0.0';
+        if (moyPrev !== 0) {
+          diffPct = ((moyCur - moyPrev) / moyPrev * 100).toFixed(1);
+        }
+        row.push(totCur, moyCur, moyPrev, diffPct + '%');
+        const notesText = (d.notes || [])
+          .map(n => `${n.date} – ${n.text}`)
+          .join(' ; ');
+        row.push(notesText);
+        ws_data.push(row);
+      });
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+      XLSX.utils.book_append_sheet(wb, ws, `Perf_${currentYear}`);
+      XLSX.writeFile(wb, `suivi_performance_${currentYear}.xlsx`);
+    }
+
+    // === RENDEZ-VOUS VISITE CONCESSIONNAIRE ===
+    function renderVisite() {
+      let search = document.getElementById('search-visite').value.trim().toLowerCase();
+      let dealers = loadDealers().slice();
+      dealers.sort((a, b) => {
+        const ma = Math.round(averageMonthly(a.mois || [])) || 0;
+        const mb = Math.round(averageMonthly(b.mois || [])) || 0;
+        return mb - ma;
+      });
+      if (search) {
+        dealers = dealers.filter(d => (d.name || '').toLowerCase().includes(search));
+      }
+      let html = `
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th style="min-width:80px">Taux (%)</th>
+              <th>Concessionnaire</th>
+              <th style="min-width:120px">Moyenne ${getCurrentYear()} ($)</th>
+              <th style="min-width:120px">Visites</th>
+              <th>Jours depuis</th>
+              <th style="min-width:100px">Agenda</th>
+              <th style="min-width:100px">Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      dealers.forEach(d => {
+        const moyCurYear = Math.round(averageMonthly(d.mois || []));
+        const moyFmt = moyCurYear.toLocaleString('fr-FR');
+
+        // Déterminer la couleur de la pastille selon la moyenne
+        let moyColorClass = '';
+        if (moyCurYear > 15000) {
+          moyColorClass = 'chip-green';
+        } else if (moyCurYear >= 5000) {
+          moyColorClass = 'chip-yellow';
+        } else {
+          moyColorClass = 'chip-red';
+        }
+
+        const visits = d.visits || [];
+        const totalVisits = visits.length;
+        const days = daysSinceLastVisit(visits);
+        const daysColor = getDaysColor(days);
+
+        html += `
+          <tr data-id="${d.id}">
+            <td>
+              <span class="chip ${getClaimColor(d.taux)}">
+                ${d.taux || ''} <span class="font-bold text-gray-400">%</span>
+              </span>
+            </td>
+            <td class="font-semibold text-md text-center">${d.name || ''}</td>
+            <td class="text-center text-lg font-semibold">
+              <span class="chip ${moyColorClass}">${moyFmt} $</span>
+            </td>
+            <!-- Visites + boutons -->
+            <td>
+              <button
+                class="bg-green-600 text-white px-2 py-1 rounded-lg shadow hover:bg-green-700 text-xs font-semibold"
+                onclick="addVisitToday('${d.id}')"
+                tabindex="0"
+              >+ Aujourd’hui</button>
+              <button
+                class="bg-blue-600 text-white px-2 py-1 rounded-lg shadow hover:bg-blue-700 text-xs font-semibold mt-1"
+                onclick="openDatePicker('${d.id}')"
+                tabindex="0"
+              >+ Date</button>
+              <!-- Champ date caché pour la saisie manuelle -->
+              <input
+                type="date"
+                id="input-date-${d.id}"
+                style="position:absolute; opacity:0; width:1px; height:1px; left:0; top:0;"
+                onchange="manualVisitDateChosen('${d.id}', this.value)"
+              />
+
+              <div class="flex gap-1 flex-wrap mt-2 justify-center">
+        `;
+        if (totalVisits > 0) {
+          const lastTwo = visits.slice(-2);
+          lastTwo.forEach((v, i) => {
+            const idxVisit = totalVisits - 2 + i;
+            html += `
+              <span class="bg-gray-200 rounded-full px-3 py-1 flex items-center gap-1 text-xs">
+                ${formatDate(v)}
+                <button
+                  class="ml-1 text-red-600 hover:text-red-900 font-bold"
+                  onclick="removeVisit('${d.id}', ${idxVisit})"
+                >×</button>
+              </span>
+            `;
+          });
+          if (totalVisits > 2) {
+            html += `
+              <button
+                class="bg-gray-300 rounded-full px-3 py-1 text-xs font-semibold hover:bg-gray-400"
+                onclick="toggleAllVisits('${d.id}', this)"
+                tabindex="0"
+              >+${totalVisits - 2} autres</button>
+            `;
+          }
+        } else {
+          html += `<span class="text-gray-400 italic text-xs">Aucune visite</span>`;
+        }
+        html += `
+              </div>
+            </td>
+            <td class="font-mono font-semibold ${daysColor}">${days}</td>
+            <!-- Agenda Google Calendar -->
+            <td>
+              <button
+                onclick="addToGoogleAgenda('${d.id}')"
+                class="bg-orange-600 text-white px-2 py-1 rounded-lg shadow hover:bg-orange-700 text-xs font-semibold"
+              >
+                Agenda
+              </button>
+            </td>
+            <!-- Notes synchronisées -->
+            <td>
+              <button
+                onclick="openNotes('${d.id}')"
+                class="text-blue-600 hover:underline font-semibold text-sm"
+                tabindex="0"
+              >📝</button>
+            </td>
+            <!-- Supprimer Concessionnaire -->
+            <td>
+              <button
+                onclick="removeDealer('${d.id}')"
+                class="text-red-600 hover:underline font-bold text-xs"
+                tabindex="0"
+              >Supprimer</button>
+            </td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('visite-table-container').innerHTML = html;
+    }
+
+    // Fonctions utiles pour l’onglet Visite
+    function addVisitToday(id) {
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d) {
+        const today = new Date().toISOString().split('T')[0];
+        d.visits.push(today);
+        saveDealers(arr);
+        renderVisite();
+        renderPerformance();
+      }
+    }
+    function openDatePicker(id) {
+      const inp = document.getElementById(`input-date-${id}`);
+      if (inp) inp.click();
+    }
+    function manualVisitDateChosen(id, dateStr) {
+      if (dateStr && !isNaN(new Date(dateStr))) {
+        const arr = loadDealers();
+        const d = arr.find(e => e.id === id);
+        if (d) {
+          d.visits.push(dateStr);
+          saveDealers(arr);
+          renderVisite();
+          renderPerformance();
+        }
+      }
+    }
+    function removeVisit(id, idx) {
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d && d.visits) {
+        d.visits.splice(idx, 1);
+        saveDealers(arr);
+        renderVisite();
+        renderPerformance();
+      }
+    }
+    function toggleAllVisits(id, btn) {
+      const existing = document.querySelector('#dropdown-visits');
+      if (existing) {
+        existing.remove();
+        return;
+      }
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (!d) return;
+      const visits = d.visits || [];
+      if (visits.length <= 2) return;
+      let html = `
+        <div id="dropdown-visits" class="absolute z-50 mt-2 bg-white shadow-lg rounded-lg p-3 border flex flex-col gap-1" style="min-width:200px; right:0;">
+      `;
+      visits.slice(0, -2).forEach((v, i) => {
+        html += `
+          <div class="flex items-center gap-2 mb-1 bg-gray-50 rounded-full px-2 py-1 text-xs">
+            ${formatDate(v)}
+            <button
+              class="ml-2 text-red-600 hover:text-red-900 font-bold"
+              onclick="removeVisit('${id}', ${i}); event.stopPropagation();"
+            >×</button>
+          </div>
+        `;
+      });
+      html += `<div class="text-center text-xs text-gray-500 pt-1">Cliquer en dehors pour fermer</div></div>`;
+      const pop = document.createElement('div');
+      pop.innerHTML = html;
+      document.body.appendChild(pop.firstChild);
+      function close() {
+        document.getElementById('dropdown-visits')?.remove();
+        document.body.removeEventListener('click', close, true);
+      }
+      setTimeout(() => document.body.addEventListener('click', close, true), 100);
+    }
+    document.getElementById('search-visite')?.addEventListener('input', renderVisite);
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d)) return '';
+      return d.toLocaleDateString('fr-CA');
+    }
+    function getClaimColor(val) {
+      const num = parseFloat(val);
+      if (isNaN(num)) return 'chip-gray';
+      if (num < 30) return 'chip-green';
+      if (num <= 40) return 'chip-yellow';
+      return 'chip-red';
+    }
+    function daysSinceLastVisit(visits) {
+      if (!visits || visits.length === 0) return '-';
+      const last = new Date(visits[visits.length - 1]);
+      const now = new Date();
+      const diff = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+      return diff >= 0 ? diff : '-';
+    }
+    function getDaysColor(days) {
+      const n = parseInt(days);
+      if (isNaN(n) || days === '-') return '';
+      if (n <= 30) return 'bg-green-100 text-green-800 border-green-200';
+      if (n <= 60) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      return 'bg-red-100 text-red-800 border-red-200';
+    }
+
+    // === GOOGLE AGENDA ===
+    function addToGoogleAgenda(id) {
+      const now = new Date();
+      function pad(n) {
+        return String(n).padStart(2, '0');
+      }
+      const yyyy = now.getUTCFullYear();
+      const mm = pad(now.getUTCMonth() + 1);
+      const dd = pad(now.getUTCDate());
+      const hh = pad(now.getUTCHours());
+      const mi = pad(now.getUTCMinutes());
+      const ss = pad(now.getUTCSeconds());
+      const start = `${yyyy}${mm}${dd}T${hh}${mi}${ss}Z`;
+      const later = new Date(now.getTime() + 60 * 60 * 1000);
+      const h2 = pad(later.getUTCHours());
+      const m2 = pad(later.getUTCMinutes());
+      const s2 = pad(later.getUTCSeconds());
+      const end = `${yyyy}${mm}${dd}T${h2}${m2}${s2}Z`;
+
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      const title = encodeURIComponent(d ? `Visite : ${d.name}` : 'Visite concessionnaire');
+      const details = encodeURIComponent('Visite enregistrée via CRM.');
+      const url = `https://calendar.google.com/calendar/r/eventedit?text=${title}&dates=${start}/${end}&details=${details}&sf=true`;
+      window.open(url, '_blank');
+    }
+
+    // === POPUP NOTES & INFOS ===
+    function openNotes(id) {
+      const overlay = document.getElementById('notes-overlay');
+      const titleEl = document.getElementById('notes-title');
+      const listEl = document.getElementById('notes-list');
+      const textarea = document.getElementById('notes-input');
+      const addBtn = document.getElementById('btn-add-note');
+      const exportBtn = document.getElementById('btn-export-notes');
+
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (!d) return;
+
+      titleEl.textContent = `Notes : ${d.name}`;
+      listEl.innerHTML = '';
+      d.notes = d.notes || [];
+      d.notes.sort((a, b) => new Date(b.date) - new Date(a.date));
+      d.notes.forEach((n, i) => {
+        const div = document.createElement('div');
+        div.className = 'note-item';
+        div.innerHTML = `
+          <div class="note-date">${n.date}</div>
+          <div class="note-text">${n.text}</div>
+          <button class="ml-2 text-red-600 hover:text-red-900 font-bold" onclick="deleteNote('${d.id}', ${i})">×</button>
+        `;
+        listEl.appendChild(div);
+      });
+      textarea.value = '';
+      addBtn.onclick = () => addNote(id);
+      exportBtn.onclick = () => exportNotesDocx(id);
+      overlay.style.display = 'flex';
+    }
+    function openInfo(id) {
+      const overlay = document.getElementById('info-overlay');
+      const titleEl = document.getElementById('info-title');
+      const ownerInput = document.getElementById('info-owner');
+      const ownerEmailInput = document.getElementById('info-owner-email');
+      const accountsInput = document.getElementById('info-accounts');
+      const accountsEmailInput = document.getElementById('info-accounts-email');
+      const fniInput = document.getElementById('info-fni');
+      const fniInput2 = document.getElementById('info-fni-2');
+      const fniInput3 = document.getElementById('info-fni-3');
+      const dirServiceInput = document.getElementById('info-dir');
+      const dirServiceEmailInput = document.getElementById('info-dir-email');
+      const saveBtn = document.getElementById('btn-save-info');
+
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (!d) return;
+      titleEl.textContent = `Infos : ${d.name}`;
+      ownerInput.value = d.info.proprietaire || '';
+      ownerEmailInput.value = d.info.email_proprietaire || '';
+      accountsInput.value = d.info.comptabilite || '';
+      accountsEmailInput.value = d.info.email_comptabilite || '';
+      fniInput.value = d.info.fni || '';
+      fniInput2.value = d.info.fni2 || '';
+      fniInput3.value = d.info.fni3 || '';
+      dirServiceInput.value = d.info.dir_service || '';
+      dirServiceEmailInput.value = d.info.email_dir_service || '';
+      saveBtn.onclick = () => saveInfo(id);
+      overlay.style.display = 'flex';
+    }
+    function closeNotes() {
+      document.getElementById('notes-overlay').style.display = 'none';
+      document.getElementById('info-overlay').style.display = 'none';
+    }
+    function addNote(id) {
+      const textarea = document.getElementById('notes-input');
+      const text = textarea.value.trim();
+      if (!text) return;
+      const date = new Date().toISOString().split('T')[0];
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d) {
+        d.notes = d.notes || [];
+        d.notes.unshift({ date, text });
+        saveDealers(arr);
+        openNotes(id);
+      }
+    }
+    function deleteNote(id, idx) {
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d && d.notes) {
+        d.notes.splice(idx, 1);
+        saveDealers(arr);
+        openNotes(id);
+      }
+    }
+    async function exportNotesDocx(id) {
+      const { Document, Packer, Paragraph, TextRun } = docx;
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (!d || !d.notes || !d.notes.length) {
+        alert('Pas de notes à exporter.');
+        return;
+      }
+      const doc = new Document({
+        sections: [
+          {
+            properties: {},
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `Notes pour ${d.name}`,
+                    bold: true,
+                    size: 32
+                  })
+                ]
+              }),
+              ...d.notes.map(n =>
+                new Paragraph({
+                  children: [
+                    new TextRun({
+                      text: `${n.date} – `,
+                      bold: true,
+                      size: 24
+                    }),
+                    new TextRun({
+                      text: n.text,
+                      size: 24
+                    })
+                  ]
+                })
+              )
+            ]
+          }
+        ]
+      });
+      Packer.toBlob(doc).then(blob => {
+        const fileName = `Notes_${d.name.replace(/\s+/g, '_')}.docx`;
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+    }
+    function saveInfo(id) {
+      const ownerInput = document.getElementById('info-owner');
+      const ownerEmailInput = document.getElementById('info-owner-email');
+      const accountsInput = document.getElementById('info-accounts');
+      const accountsEmailInput = document.getElementById('info-accounts-email');
+      const fniInput = document.getElementById('info-fni');
+      const fniInput2 = document.getElementById('info-fni-2');
+      const fniInput3 = document.getElementById('info-fni-3');
+      const dirServiceInput = document.getElementById('info-dir');
+      const dirServiceEmailInput = document.getElementById('info-dir-email');
+      const arr = loadDealers();
+      const d = arr.find(e => e.id === id);
+      if (d) {
+        d.info.proprietaire = ownerInput.value.trim();
+        d.info.email_proprietaire = ownerEmailInput.value.trim();
+        d.info.comptabilite = accountsInput.value.trim();
+        d.info.email_comptabilite = accountsEmailInput.value.trim();
+        d.info.fni = fniInput.value.trim();
+        d.info.fni2 = fniInput2.value.trim();
+        d.info.fni3 = fniInput3.value.trim();
+        d.info.dir_service = dirServiceInput.value.trim();
+        d.info.email_dir_service = dirServiceEmailInput.value.trim();
+        saveDealers(arr);
+        closeNotes();
+      }
+    }
+    function navigateToGmail(inputId) {
+      const email = document.getElementById(inputId).value.trim();
+      if (email) {
+        window.location.href = `mailto:${email}`;
+      }
+    }
+
+    // === CALCULATRICE FINANCIÈRE ===
+    function calcAmortissement(montant, tauxAnnuel, annees) {
+      if (montant > 0 && tauxAnnuel > 0 && annees > 0) {
+        const mois = annees * 12;
+        const tauxMensuel = tauxAnnuel / 12 / 100;
+        const mensualite =
+          (montant * tauxMensuel) / (1 - Math.pow(1 + tauxMensuel, -mois));
+        const totalPaye = mensualite * mois;
+        return totalPaye - montant;
+      }
+      return 0;
+    }
+    function updateCompInterest() {
+      const montant = parseFloat(document.getElementById('comp-montant').value) || 0;
+      const tauxAnnuel =
+        parseFloat(document.getElementById('comp-taux').value) || 0;
+      const annees = parseInt(document.getElementById('comp-annees').value) || 0;
+      let interetGagne = 0;
+      if (montant > 0 && tauxAnnuel > 0 && annees > 0) {
+        const montantFinal = montant * Math.pow(1 + tauxAnnuel / 100, annees);
+        interetGagne = montantFinal - montant;
+        interetGagne = Math.round(interetGagne);
+        document.getElementById('comp-total').textContent =
+          interetGagne.toLocaleString('fr-CA', {
+            style: 'currency',
+            currency: 'CAD',
+            maximumFractionDigits: 0
+          });
+      } else {
+        document.getElementById('comp-total').textContent = '0 $';
+      }
+      return interetGagne;
+    }
+    function updateEmpInterest() {
+      const montant = parseFloat(document.getElementById('emp-montant').value) || 0;
+      const tauxAnnuel =
+        parseFloat(document.getElementById('emp-taux').value) || 0;
+      const annees = parseInt(document.getElementById('emp-annees').value) || 0;
+      let interetsPayes = 0;
+      if (montant > 0 && tauxAnnuel > 0 && annees > 0) {
+        interetsPayes = calcAmortissement(montant, tauxAnnuel, annees);
+        interetsPayes = Math.round(interetsPayes);
+        document.getElementById('emp-total').textContent =
+          interetsPayes.toLocaleString('fr-CA', {
+            style: 'currency',
+            currency: 'CAD',
+            maximumFractionDigits: 0
+          });
+      } else {
+        document.getElementById('emp-total').textContent = '0 $';
+      }
+      return interetsPayes;
+    }
+    function updateMargeInterest() {
+      const montant = parseFloat(document.getElementById('marge-montant').value) || 0;
+      const taux = parseFloat(document.getElementById('marge-taux').value) || 0;
+      const annees = parseInt(document.getElementById('marge-annees').value) || 0;
+      let interets = 0;
+      if (montant > 0 && taux > 0 && annees > 0) {
+        interets = calcAmortissement(montant, taux, annees);
+        interets = Math.round(interets);
+        document.getElementById('marge-total').textContent =
+          interets.toLocaleString('fr-CA', {
+            style: 'currency',
+            currency: 'CAD',
+            maximumFractionDigits: 0
+          });
+      } else {
+        document.getElementById('marge-total').textContent = '0 $';
+      }
+      return interets;
+    }
+    function updatePretInterest() {
+      const montant = parseFloat(document.getElementById('pret-montant').value) || 0;
+      const taux = parseFloat(document.getElementById('pret-taux').value) || 0;
+      const annees = parseInt(document.getElementById('pret-annees').value) || 0;
+      let interets = 0;
+      if (montant > 0 && taux > 0 && annees > 0) {
+        interets = calcAmortissement(montant, taux, annees);
+        interets = Math.round(interets);
+        document.getElementById('pret-total').textContent =
+          interets.toLocaleString('fr-CA', {
+            style: 'currency',
+            currency: 'CAD',
+            maximumFractionDigits: 0
+          });
+      } else {
+        document.getElementById('pret-total').textContent = '0 $';
+      }
+      return interets;
+    }
+    function updateAllCalc() {
+      const compInteret = updateCompInterest();
+      const empInteret = updateEmpInterest();
+      const diff = compInteret - empInteret;
+      let signe = '';
+      if (diff > 0) signe = '+';
+      document.getElementById('diff-box').textContent =
+        `Différence entre les deux options : ${signe}${Math.round(diff).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}`;
+
+      const interetMarge = updateMargeInterest();
+      const interetPret = updatePretInterest();
+      const margeAnnees = parseInt(document.getElementById('marge-annees').value) || 0;
+      let diffPer2Weeks = 0;
+      if (margeAnnees > 0) diffPer2Weeks = (interetPret - interetMarge) / (margeAnnees * 26);
+      diffPer2Weeks = Math.round(diffPer2Weeks);
+      document.getElementById('compare-diff-per-two-weeks').textContent =
+        `Différence aux deux semaines : ${diffPer2Weeks >= 0 ? '+' : ''}${diffPer2Weeks.toLocaleString('fr-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}`;
+    }
+    function initializeCalculatrice() {
+      [
+        'comp-montant','comp-taux','comp-annees',
+        'emp-montant','emp-taux','emp-annees',
+        'marge-montant','marge-taux','marge-annees',
+        'pret-montant','pret-taux','pret-annees'
+      ].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', updateAllCalc);
+      });
+      updateAllCalc();
+    }
+
+    // === OUTIL VISUEL GARANTIE ===
+    const configG = {
+      yearsMin: 0,
+      yearsMax: 15,
+      kmMin: 0,
+      kmMax: 260000,
+      stepYears: 1,
+      stepKm: 20000,
+      paddingLeft: 150,
+      graphWidth: 760,
+      graphHeight: 460
+    };
+    function initializeGraphGarantie() {
+      const dateMise = document.getElementById('date-mise-en-service');
+      const dateAuj = document.getElementById('date-aujourd’hui');
+      const kmAuj = document.getElementById('km-aujourd’hui');
+      const anneesProj = document.getElementById('annees-projetees');
+      const kmPar = document.getElementById('km-par-an');
+
+      ['input', 'change'].forEach(ev => {
+        dateMise?.addEventListener(ev, () => {
+          updateKmProjete();
+          drawGraph();
+        });
+        dateAuj?.addEventListener(ev, drawGraph);
+        kmAuj?.addEventListener(ev, drawGraph);
+        anneesProj?.addEventListener(ev, () => {
+          updateKmProjete();
+          drawGraph();
+        });
+        kmPar?.addEventListener(ev, () => {
+          updateKmProjete();
+          drawGraph();
+        });
+      });
+
+      window.onload = function () {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        if (dateMise && !dateMise.value) dateMise.value = '2023-01-01';
+        if (dateAuj) dateAuj.value = `${yyyy}-${mm}-${dd}`;
+        updateKmProjete();
+        drawGraph();
+      };
+    }
+    function updateKmProjete() {
+      const anneesProj = document.getElementById('annees-projetees');
+      const kmPar = document.getElementById('km-par-an');
+      const kmProjete = document.getElementById('km-projeté');
+      const nbAn = parseInt(anneesProj.value) || 0;
+      const kmYear = parseInt(kmPar.value) || 0;
+      kmProjete.value = nbAn * kmYear;
+    }
+    function drawGraph() {
+      const canvas = document.getElementById('canvas-graph');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const {
+        paddingLeft,
+        graphWidth,
+        graphHeight,
+        yearsMin,
+        yearsMax,
+        kmMin,
+        kmMax,
+        stepYears,
+        stepKm
+      } = configG;
+
+      // Vider le canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Fond blanc pour la zone de tracé
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(paddingLeft - 15, 15, graphWidth + 30, graphHeight + 30);
+
+      // Tracer les axes principaux
+      ctx.save();
+      ctx.strokeStyle = '#004472';
+      ctx.lineWidth = 3.2;
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, 15);
+      ctx.lineTo(paddingLeft, graphHeight + 15);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 2.0;
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, graphHeight + 15);
+      ctx.lineTo(paddingLeft + graphWidth, graphHeight + 15);
+      ctx.stroke();
+      ctx.restore();
+
+      // Graduations sur l’axe des années
+      for (let i = yearsMin; i <= yearsMax; i += stepYears) {
+        const x = paddingLeft + (graphWidth * (i - yearsMin)) / (yearsMax - yearsMin);
+        ctx.beginPath();
+        ctx.moveTo(x, graphHeight + 15);
+        ctx.lineTo(x, graphHeight + 35);
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        ctx.fillStyle = '#444';
+        ctx.font = '20px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.fillText(i + 'a', x, graphHeight + 52);
+      }
+
+      // Graduations sur l’axe des kilomètres
+      for (let k = kmMin; k <= kmMax; k += stepKm) {
+        const y = graphHeight + 15 - (graphHeight * (k - kmMin)) / (kmMax - kmMin);
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft - 20, y);
+        ctx.lineTo(paddingLeft, y);
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        ctx.fillStyle = '#444';
+        ctx.font = '19px Segoe UI';
+        ctx.textAlign = 'right';
+        ctx.fillText(k.toLocaleString('fr-CA'), paddingLeft - 22, y + 6);
+      }
+
+      // Zone “Garantie de base” (3 ans / 60 000 km)
+      const baseX1 = paddingLeft;
+      const baseY1 = graphHeight + 15;
+      const baseX2 = paddingLeft + (graphWidth * (3 - yearsMin)) / (yearsMax - yearsMin);
+      const baseY2 = graphHeight + 15 - (graphHeight * (60000 - kmMin)) / (kmMax - kmMin);
+      ctx.fillStyle = '#A3D8F4';
+      ctx.strokeStyle = '#5A99B6';
+      ctx.lineWidth = 4.6;
+      ctx.beginPath();
+      ctx.rect(baseX1, baseY2, baseX2 - baseX1, baseY1 - baseY2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Zone “Garantie déjà consommée” (hachures)
+      const dateMise = document.getElementById('date-mise-en-service');
+      const dateAuj = document.getElementById('date-aujourd’hui');
+      let anneesCons = getYearsSince(dateMise.value, dateAuj.value);
+      if (anneesCons < 0) anneesCons = 0;
+      if (anneesCons > yearsMax) anneesCons = yearsMax;
+      let kmCons = parseInt(document.getElementById('km-aujourd’hui').value) || 0;
+      if (kmCons < kmMin) kmCons = kmMin;
+      if (kmCons > kmMax) kmCons = kmMax;
+      const hX2 =
+        paddingLeft + (graphWidth * (anneesCons - yearsMin)) / (yearsMax - yearsMin);
+      const hY2 =
+        graphHeight + 15 - (graphHeight * (kmCons - kmMin)) / (kmMax - kmMin);
+      if (hX2 > baseX1 && hY2 < baseY1) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(baseX1, hY2, hX2 - baseX1, baseY1 - hY2);
+        ctx.clip();
+        ctx.strokeStyle = '#E06767';
+        ctx.lineWidth = 10;
+        for (let i = -graphHeight; i < graphWidth + graphHeight; i += 28) {
+          ctx.beginPath();
+          ctx.moveTo(baseX1 + i, graphHeight + 15);
+          ctx.lineTo(baseX1 + i + 52, 15);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // Zone “Projection future”
+      const nbAns = parseInt(document.getElementById('annees-projetees').value) || 0;
+      const kmParAn = parseInt(document.getElementById('km-par-an').value) || 0;
+      const kmTotal = nbAns * kmParAn;
+      const kmProjete = document.getElementById('km-projeté');
+      kmProjete.value = kmTotal;
+
+      let debutAn = anneesCons;
+      let debutKm = kmCons;
+      let finAn = Math.min(debutAn + nbAns, yearsMax);
+      let finKm = Math.min(debutKm + kmTotal, kmMax);
+      if (finAn < debutAn) finAn = debutAn;
+      if (finKm < debutKm) finKm = debutKm;
+
+      const garantieAn = 3;
+      const garantieKm = 60000;
+      const gX =
+        paddingLeft + (graphWidth * (garantieAn - yearsMin)) / (yearsMax - yearsMin);
+      const gY =
+        graphHeight + 15 - (graphHeight * (garantieKm - kmMin)) / (kmMax - kmMin);
+      const pX1 =
+        paddingLeft + (graphWidth * (debutAn - yearsMin)) / (yearsMax - yearsMin);
+      const pY1 =
+        graphHeight + 15 - (graphHeight * (debutKm - kmMin)) / (kmMax - kmMin);
+      const pX2 =
+        paddingLeft + (graphWidth * (finAn - yearsMin)) / (yearsMax - yearsMin);
+      const pY2 =
+        graphHeight + 15 - (graphHeight * (finKm - kmMin)) / (kmMax - kmMin);
+
+      // Ligne pointillée vers début projection
+      ctx.save();
+      ctx.setLineDash([12, 8]);
+      ctx.strokeStyle = '#c8102e99';
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, graphHeight + 15);
+      ctx.lineTo(pX1, pY1);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // Sous garantie (hachurage vert) – jusqu’à la limite de la garantie
+      const sgFinAn = Math.min(garantieAn, finAn);
+      const sgFinKm =
+        Math.min(garantieKm, debutKm + Math.min(nbAns, garantieAn - debutAn) * kmParAn);
+      const sX2 = paddingLeft + (graphWidth * (sgFinAn - yearsMin)) / (yearsMax - yearsMin);
+      const sY2 =
+        graphHeight + 15 - (graphHeight * (sgFinKm - kmMin)) / (kmMax - kmMin);
+      if (sgFinAn > debutAn && sgFinKm > debutKm) {
+        const eX = Math.min(sX2, baseX2);
+        const eY = Math.min(sY2, baseY2);
+        drawHachureRect(pX1, pY1, eX, eY, '#00B245', 12, 4, 45);
+      }
+
+      // Hors garantie (zone verte claire)
+      if (finAn > garantieAn || finKm > garantieKm) {
+        const startX = Math.max(sX2, gX);
+        const startY = Math.max(sY2, gY);
+        if (pX2 > startX && startY > pY2) {
+          ctx.save();
+          ctx.fillStyle = '#A8E6B6';
+          ctx.strokeStyle = '#54BB7C';
+          ctx.lineWidth = 4.6;
+          ctx.beginPath();
+          ctx.rect(startX, pY2, pX2 - startX, startY - pY2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // Point actuel (cercle rouge)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(pX1, pY1, 7, 0, 2 * Math.PI, false);
+      ctx.fillStyle = '#C8102E';
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2.4;
+      ctx.shadowColor = '#C8102E88';
+      ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // Créer un “glow” animé en HTML/CSS si nécessaire
+      let htmlGlow = document.getElementById('point-glow');
+      if (!htmlGlow) {
+        htmlGlow = document.createElement('div');
+        htmlGlow.id = 'point-glow';
+        htmlGlow.className = 'point-glow';
+        htmlGlow.style.position = 'absolute';
+        htmlGlow.style.pointerEvents = 'none';
+        htmlGlow.style.width = '18px';
+        htmlGlow.style.height = '18px';
+        htmlGlow.style.borderRadius = '50%';
+        htmlGlow.style.background = '#C8102E';
+        htmlGlow.style.border = '3px solid #fff';
+        htmlGlow.style.boxShadow = '0 0 12px 3px rgba(215,0,25,0.6)';
+        document.querySelector('.graph-area').appendChild(htmlGlow);
+      }
+      htmlGlow.style.left = `${pX1 - 9}px`;
+      htmlGlow.style.top = `${pY1 - 9}px`;
+    }
+    function getYearsSince(dateStart, dateEnd) {
+      const d1 = new Date(dateStart);
+      const d2 = new Date(dateEnd);
+      const diff = d2 - d1;
+      return diff > 0 ? diff / (365.25 * 24 * 60 * 60 * 1000) : 0;
+    }
+    function drawHachureRect(x1, y1, x2, y2, color = '#00b245', spacing = 15, width = 4, angle = 45) {
+      const canvas = document.getElementById('canvas-graph');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x1, y2, x2 - x1, y1 - y2);
+      ctx.clip();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      const diag = Math.sqrt((x2 - x1) ** 2 + (y1 - y2) ** 2);
+      const a = Math.tan((angle * Math.PI) / 180);
+      for (let i = -diag; i < diag + Math.max(x2 - x1, y1 - y2); i += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(x1 + i, y1);
+        ctx.lineTo(x1 + i + (y1 - y2) / a, y2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    document.getElementById('btn-export-garantie')?.addEventListener('click', () => {
+      const canvas = document.getElementById('canvas-graph');
+      const htmlGlow = document.getElementById('point-glow');
+      if (htmlGlow) htmlGlow.style.display = 'none';
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.download = 'graphique_garantie.png';
+        link.href = canvas.toDataURL();
+        link.click();
+        if (htmlGlow) htmlGlow.style.display = 'block';
+      }, 50);
+    });
+
+
+    // ------------------------------------------------------------
+    // BACKUP AUTOMATIQUE SUR GOOGLE DRIVE VIA APPS SCRIPT
+    // ------------------------------------------------------------
+    const BACKUP_URL = 'https://script.google.com/macros/s/AKfycbw2Qcf_fO3d1LKkYb6adradD2v2G8iyFMSDdn7z5E4IRDiDIVcXUefiKXbJx8GufU7x/exec';
+
+    function getCRMDataObject() {
+      const raw = localStorage.getItem('crm_data');
+      if (!raw) return {};
+      try {
+        return JSON.parse(raw);
+      } catch (e) {
+        console.error('Impossible de parser le JSON de localStorage:', e);
+        return {};
+      }
+    }
+
+    async function backupToGoogleDrive() {
+      const crmObj = getCRMDataObject();
+      const jsonString = JSON.stringify(crmObj);
+
+      try {
+        const res = await fetch(BACKUP_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: jsonString
+        });
+        if (!res.ok) {
+          console.error('Erreur HTTP lors de la sauvegarde sur Drive:', res.status, res.statusText);
+          return;
+        }
+        const data = await res.json();
+        if (data.status === 'success') {
+          console.log('Sauvegarde CRM réussie sur Drive ✔️');
+        } else {
+          console.warn('Serveur Apps Script a renvoyé une erreur :', data);
+        }
+      } catch (err) {
+        console.error('Erreur lors de l’appel fetch() backupToGoogleDrive:', err);
+      }
+    }
+
+    // Exécuter une première sauvegarde au chargement et planifier un cron toutes les 24 h
+    window.addEventListener('DOMContentLoaded', () => {
+      backupToGoogleDrive();
+      const MILLISECONDES_PAR_JOUR = 24 * 60 * 60 * 1000;
+      setInterval(() => {
+        backupToGoogleDrive();
+      }, MILLISECONDES_PAR_JOUR);
+    });
+  </script>
+</body>
+</html>
