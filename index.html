@@ -847,6 +847,10 @@
         width: 26vw;
         min-width: 36vw;
       }
+      .note-field {
+        font-size: 0.94rem;
+        min-height: 36px;
+      }
     }
 
     /* === CSS D’IMPRESSION (A4/Letter) === */
@@ -1032,7 +1036,7 @@
           <span
             class="text-2xl italic text-gray-600 border-l-4 border-red-400 pl-4"
           >
-            “On ne sauve pas des vies, on vend des Garanties.”</span
+            “On sauve pas des vies, on vend des Garanties.”</span
           >
         </div>
         <div class="text-gray-500 text-sm mt-6">
@@ -1243,7 +1247,7 @@
               type="number"
               id="marge-annees"
               value="7"
-              min="1"
+              min="0"
               step="1"
               tabindex="9"
             />
@@ -2250,9 +2254,7 @@
       let diffPctGlobal = "0.0";
       if (avgPrevYear !== 0) {
         diffPctGlobal = (
-          (avgCurYear - avgPrevYear) /
-          avgPrevYear *
-          100
+          (avgCurYear - avgPrevYear) / avgPrevYear * 100
         ).toFixed(1);
       }
       const pctColorGlobal =
@@ -2435,6 +2437,73 @@
       const ws = XLSX.utils.aoa_to_sheet(ws_data);
       XLSX.utils.book_append_sheet(wb, ws, `Perf_${currentYear}`);
       XLSX.writeFile(wb, `suivi_performance_${currentYear}.xlsx`);
+    }
+
+    /***********************************************************/
+    /***    Ajout du traitement pour l'import Excel/CSV      ***/
+    /***********************************************************/
+    // Ouvre le selecteur de fichier quand on clique sur "Importer Excel/CSV"
+    document.getElementById("btn-import")?.addEventListener("click", () => {
+      document.getElementById("file-input").click();
+    });
+
+    // Écoute le changement de fichier et traite l'import
+    document.getElementById("file-input")?.addEventListener("change", handleImportFile, false);
+
+    function handleImportFile(evt) {
+      const input = evt.target;
+      if (!input.files || !input.files[0]) return;
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const data = e.target.result;
+        let workbook;
+        try {
+          // Lire le fichier au format binaire avec XLSX
+          workbook = XLSX.read(data, { type: "binary" });
+        } catch (err) {
+          alert("Erreur lors de la lecture du fichier Excel : " + err.message);
+          return;
+        }
+
+        // On prend la première feuille
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        // Convertir en tableau d'objets JSON
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        // Mapping vers la structure interne
+        const importedDealers = jsonData.map(row => {
+          const d = createDealer();
+          d.name = row["Nom"]?.toString().trim() || "";
+          d.taux = parseFloat(row["Taux"]) || "";
+          // Colonnes mois attendues : Janv, Fév, etc.
+          const moisClés = ["Janv", "Fév", "Mars", "Avr", "Mai", "Juin", "Juil", "Août", "Sept", "Oct", "Nov", "Déc"];
+          d.mois = moisClés.map(key => {
+            const v = row[key];
+            const n = parseFloat(v);
+            return isNaN(n) ? "" : Math.round(n).toString();
+          });
+          d.moyennePrevYear = parseFloat(row["MoyennePrevYear"]) ? Math.round(parseFloat(row["MoyennePrevYear"])) : "";
+          return d;
+        });
+
+        // Écrase les données courantes
+        saveDealers(importedDealers);
+
+        // Met à jour l'affichage
+        renderPerformance();
+        renderVisite();
+
+        // Réinitialise l'input pour pouvoir ré-importer si besoin
+        input.value = "";
+        alert("Importation terminée : " + importedDealers.length + " concessionnaire(s) chargé(s).");
+      };
+
+      // Lire en binaire
+      reader.readAsBinaryString(file);
     }
 
     /***********************************************************/
@@ -3246,7 +3315,7 @@
         );
       const sX2 = paddingLeft + (graphWidth * (sgFinAn - yearsMin)) / (yearsMax - yearsMin);
       const sY2 =
-        graphHeight + 15 -
+        graphHeight + 15 - 
         (graphHeight * (sgFinKm - kmMin)) / (kmMax - kmMin);
       if (sgFinAn > debutAn && sgFinKm > debutKm) {
         const eX = Math.min(sX2, baseX2);
